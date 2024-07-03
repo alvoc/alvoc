@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      
       - name: Base Setup
         uses: ./.github/workflows/base-python.yml
         with:
@@ -26,11 +29,14 @@ jobs:
     needs: commit-message-check
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      
       - name: Base Setup
         uses: ./.github/workflows/base-python.yml
         with:
           environment: dev
-          
+
       - name: Run tests
         run: poetry run pytest
 
@@ -39,9 +45,9 @@ jobs:
     needs: tests
 
     steps:
-      - name: Check out
+      - name: Checkout repo
         uses: actions/checkout@v4
-
+      
       - id: cz
         name: Create bump and changelog
         uses: commitizen-tools/commitizen-action@master
