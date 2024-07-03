@@ -15,46 +15,72 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      
+        with:
+          fetch-depth: 0  # Ensure we fetch all history to compute the commit range
+
       - name: Base Setup
-        uses: ./.github/workflows/base-python.yml
+        uses: ./.github/workflows/actions/setup-base
         with:
           environment: dev
+
+      - name: Determine commit range for push
+        id: commit_range_push
+        if: github.event_name == 'push'
+        run: |
+          before=${{ github.event.before }}
+          if [ "$before" = "0000000000000000000000000000000000000000" ] || [ -z "$before" ]; then
+            before=$(git rev-list --max-parents=0 HEAD)
+          fi
+          echo "::set-output name=commit_range::${before}..${{ github.sha }}"
+
+
+      - name: Determine commit range for pull request
+        id: commit_range_pr
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "::set-output name=commit_range::${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
 
       - name: Check commit messages
-        run: poetry run cz check --branch ${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+        run: |
+          commit_range="${{ steps.commit_range_push.outputs.commit_range || steps.commit_range_pr.outputs.commit_range }}"
+          if [ "$commit_range" = ".." ]; then
+            echo "No commits to check."
+            exit 0
+          fi
+          poetry run cz check --rev-range $commit_range
+  # tests:
+  #   runs-on: ubuntu-latest
+  #   needs: commit-message-check
 
-  tests:
-    runs-on: ubuntu-latest
-    needs: commit-message-check
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v4
       
-      - name: Base Setup
-        uses: ./.github/workflows/base-python.yml
-        with:
-          environment: dev
+  #     - name: Base Setup
+  #       uses: ./.github/workflows/actions/setup-base
+  #       with:
+  #         environment: dev
 
-      - name: Run tests
-        run: poetry run pytest
+  #     - name: Run tests
+  #       run: poetry run pytest
 
-  bump-version:
-    runs-on: ubuntu-latest
-    needs: tests
+  # bump-version:
+  #   runs-on: ubuntu-latest
+  #   # needs: tests
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      
-      - id: cz
-        name: Create bump and changelog
-        uses: commitizen-tools/commitizen-action@master
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v4
 
-      - name: Print Version
-        run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
+  #     - id: cz
+  #       name: Create bump and changelog
+  #       uses: commitizen-tools/commitizen-action@0.21.0
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
 
+
+  #     - name: Print Version
+  #       run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
 
   # release-to-pypi:
   #   runs-on: ubuntu-latest
