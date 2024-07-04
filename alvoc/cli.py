@@ -3,7 +3,6 @@ import typer
 from alvoc.core.amplicons import amplicon_coverage, gc_depth
 from alvoc.core.mutations import aa, nt, find_mutants
 from alvoc.core.lineages import find_lineages
-from alvoc.core.precompute import precompute
 
 cli = typer.Typer(help="Identify frequencies of concerning mutations from aligned reads")
 
