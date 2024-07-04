@@ -33,19 +33,26 @@ def aa(mut, genes, seq):
     Returns:
         list: A list of nucleotide mutations.
     """
+    # Extract the gene names
     gene = mut.split(':')[0]
     
+    # Handle deletion mutations
     if gene == 'DEL':
         nt_idx, length = map(int, re.findall(r'\d+', mut))
-        return [f'{seq[nt_idx + i]}{nt_idx + i}-' for i in range(length)]
+        # Convert 1-based to 0-based index
+        nt_idx -= 1
+        return [f'{seq[nt_idx + i]}{nt_idx + i + 1}-' for i in range(length)]
     
+    # Extra the aa position
     aa_idx = int(re.findall(r'\d+', mut)[-1])
     nt_idx = genes[gene][0] + (aa_idx - 1) * 3
     codon = seq[nt_idx:nt_idx + 3]
-    
+
+    # Handle deletions in AA mutations
     if mut.split(':')[1].startswith('DEL') or mut.endswith('-'):
         return [f'{seq[nt_idx + i]}{nt_idx + i + 1}-' for i in range(3)]
-    
+
+    # Generate nucleotide mutations
     new_acid = mut[-1]
     nt_muts = []
 
@@ -70,18 +77,22 @@ def nt(mut, genes, seq):
 
     Returns:
         str: The amino acid mutation.
-    """
+    """             
+    # Extract the mutation details
     _, new_base = mut[0], mut[-1]
-    nt_idx = int(re.findall(r'\d+', mut)[0]) - 1
-    
+    nt_idx = int(re.findall(r'\d+', mut)[0]) - 1  # Convert 1-based to 0-based index
+
+    # Find the corresponding gene to the mutation
     for gene, (start, end) in genes.items():
         if start <= nt_idx < end:
             nt_offset = (nt_idx - start) % 3
             aa_idx = (nt_idx - start) // 3 + 1
-            
+
+            # Handle deletion mutations
             if new_base == '-':
                 return f'{gene}:DEL{aa_idx}'
-            
+
+            # Generate new codon 
             codon_start = start + (aa_idx - 1) * 3
             codon = list(seq[codon_start:codon_start + 3])
             acid = CODONS[''.join(codon)]
