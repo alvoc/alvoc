@@ -1,6 +1,7 @@
 import typer
 
 from alvoc.core.amplicons import amplicon_coverage, gc_depth
+from alvoc.core.logging import init_logger
 from alvoc.core.mutations import aa, nt, find_mutants
 from alvoc.core.lineages import find_lineages
 
@@ -8,8 +9,8 @@ cli = typer.Typer(help="Identify frequencies of concerning mutations from aligne
 
 @cli.callback()
 def callback():
-    # This function will run before any command.
-    # Run precompute functions here (specific to virus of interest)
+    init_logger()
+
     pass 
 
 @cli.command()
