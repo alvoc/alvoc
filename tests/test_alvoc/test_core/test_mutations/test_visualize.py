@@ -1,7 +1,7 @@
 import pytest
 from alvoc.core.mutations.visualize import plot_mutations
-import matplotlib
 import os
+from matplotlib import pyplot as plt
 
 
 @pytest.fixture
@@ -23,13 +23,15 @@ def test_plot_generates_correctly(mutation_data):
     Test that the plot generates without error and handles the file path correctly.
     """
     # Ensure plot is not interactive to prevent issues with CI
-    matplotlib.use("Agg")
-    sample_results, sample_names, min_depth, img_path = mutation_data
-    try:
-        plot_mutations(sample_results, sample_names, min_depth, img_path)
-        assert True  # If no error, the plot generation is assumed successful
-    except Exception as e:
-        pytest.fail(f"Plot generation failed with an error: {e}")
+
+    with plt.ion():
+
+        sample_results, sample_names, min_depth, img_path = mutation_data
+        try:
+            plot_mutations(sample_results, sample_names, min_depth, img_path)
+            assert True  # If no error, the plot generation is assumed successful
+        except Exception as e:
+            pytest.fail(f"Plot generation failed with an error: {e}")
 
 
 def test_plot_saves_file(mutation_data):
