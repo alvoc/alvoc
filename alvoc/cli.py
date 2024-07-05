@@ -1,7 +1,8 @@
 import typer
 
 from alvoc.core.logging import init_logger
-from alvoc.core.mutations import convert_aa, convert_nt
+from alvoc.core.mutations import aa, nt
+from alvoc.core.precompute import precompute
 # from alvoc.core.lineages import find_lineages
 # from alvoc.core.amplicons import amplicon_coverage, gc_depth
 
@@ -21,9 +22,19 @@ def convert_amino_acid(
     outdir: str = typer.Option(".", help="Output directory for results and intermediate data")
 ):
     """
-    Convert amino acid mutation to nucleotide mutations for a given virus.
+    Convert amino acid mutation to nucleotide mutations for a given virus
+
+    Args:
+        tax_id : Taxonomic ID of the virus. Required if 'genbank_file' is not provided.
+        genbank_file : Path to the GenBank file. Required if 'tax_id' is not provided.
+        mut : The amino acid mutation in the format 'GENE:aaPOSITIONaaNEW'.
+        outdir : Output directory for results and intermediate data. Defaults to the current directory.
+
+    Returns:
+        A list of nucleotide mutations.
     """
-    convert_aa(tax_id, genbank_file, mut, outdir)
+    genes, seq = precompute(tax_id, genbank_file, outdir)
+    return aa(mut, genes, seq)
 
 @cli.command()
 def convert_nucleotide(
@@ -34,20 +45,49 @@ def convert_nucleotide(
 ):
     """
     Convert nucleotide mutation to amino acid mutation for a given virus.
+
+    Args:
+        tax_id : Taxonomic ID of the virus. Required if 'genbank_file' is not provided.
+        genbank_file : Path to the GenBank file. Required if 'tax_id' is not provided.
+        mut : The nucleotide mutation in the format 'BASENPOSBASE'.
+        outdir : Output directory for results and intermediate data. Defaults to the current directory.
+
+    Returns:
+        The amino acid mutation.
     """
-    convert_nt(tax_id, genbank_file, mut, outdir)
+    genes, seq = precompute(tax_id, genbank_file, outdir)
+    return nt(mut, genes, seq)
 
 
-# @cli.command()
-# def find_mutants_command(
-#     samples_path: str,
-#     mutations_path: str = typer.Option(None, "--mutations-path", "-m", help='Path to mutations'),
-#     min_depth: int = typer.Option(40, "--min-depth", "-d", help='Minimum depth'),
-#     save_img: bool = typer.Option(False, "--save-img", "-s", help='Save image'),
-#     csv: bool = typer.Option(False, "--csv", "-c", help='Save as CSV')
-# ):
-#     """Find mutants in samples"""
-#     find_mutants(samples_path, mutations_path, min_depth, save_img, csv)
+@cli.command()
+def find_mutants_command(
+    samples_path: str,
+    tax_id: str | None = typer.Option(None, help="Taxonomic ID of the virus, required if no GenBank file is provided"),
+    genbank_file: str | None = typer.Option(None, help="Path to the GenBank file, required if no tax ID is provided"),
+    mutations_path: str = typer.Option(None, "--mutations-path", "-m", help='Path to mutations'),
+    min_depth: int = typer.Option(40, "--min-depth", "-d", help='Minimum depth'),
+    save_img: bool = typer.Option(False, "--save-img", "-s", help='Save image'),
+    csv: bool = typer.Option(False, "--csv", "-c", help='Save as CSV'),
+    outdir: str = typer.Option(".", help="Output directory for results and intermediate data")
+):
+    """
+    Find mutations in sequencing data, either from BAM files or a sample list. Uses a dictionary of mutation lineages provided as a parameter.
+
+    Args:
+        tax_id : Taxonomic ID of the virus. Required if 'genbank_file' is not provided.
+        genbank_file : Path to the GenBank file. Required if 'tax_id' is not provided.
+        file_path: Path to the file containing sample information or BAM file.
+        mutations_path: Path to the file containing mutations or mutation identifier.
+        min_depth: Minimum depth for mutation analysis.
+        save_img: Whether to save a plot image.
+        csv: Whether to generate a CSV file.
+        outdir : Output directory for results and intermediate data. Defaults to the current directory.
+
+    Returns:
+        Prints number of reads with and without each mutation and generates a heatmap showing their frequencies.
+    """
+    genes, seq = precompute(tax_id, genbank_file, outdir)
+    pass 
 
 # @cli.command()
 # def find_lineages_command(

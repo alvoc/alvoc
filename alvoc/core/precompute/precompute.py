@@ -1,61 +1,66 @@
 import json
 from Bio import SeqIO, Entrez
 from pathlib import Path
-
 from alvoc.core import logging
 
 logger = logging.get_logger()
 
 
-def prepare(tax_id=None, genbank_file=None, outdir=""):
+def precompute(
+    tax_id: str | None = None,
+    genbank_file: str | None = None,
+    outdir: str = "",
+    email: str = "example@example.com",
+) -> tuple[dict[str, tuple[int, int]], str]:
     """
-    Processes a GenBank file to extract gene information and sequence, or alternatively pass in a virus taxonomic ID to automatically generate the necessary reference data. At least one of 'tax_id' or 'genbank_file' must be provided.
+    Processes a GenBank file to extract gene information and sequence, or alternatively pass in a virus taxonomic ID
+    to automatically generate the necessary reference data. At least one of 'tax_id' or 'genbank_file' must be provided.
 
     Args:
-        tax_id (str, optional): Taxonomic ID of the virus. Required if 'genbank_file' is not provided.
-        genbank_file (str, optional): Path to the GenBank file. Required if 'tax_id' is not provided.
-        outdir (str, optional): Output directory for results and intermediate data. Defaults to the current directory.
+        options: An instance of PrecomputeOptions containing all necessary parameters.
 
     Returns:
-        Tuple[Dict[str, Tuple[int, int]], str]: A tuple with gene coordinates (dictionary)
-                                                and genome sequence (string).
+        A tuple with gene coordinates (dictionary) and genome sequence (string).
 
     Raises:
         ValueError: If neither 'tax_id' nor 'genbank_file' is provided.
     """
+    if not (tax_id or genbank_file):
+        raise ValueError("Either 'tax_id' or 'genbank_file' must be provided.")
+
     outdir_path = Path(outdir)
     if not outdir_path.is_dir():
-        logger.info(f"Generating {outdir_path} as a directory")
+        logger.info(f"Creating directory at {outdir_path}")
         outdir_path.mkdir(parents=True, exist_ok=True)
 
     if genbank_file:
         reference_file = Path(genbank_file)
         return process_reference(reference_file, outdir_path)
     elif tax_id:
-        file_path = download_virus_data(tax_id, outdir_path)
-        if file_path is not None:
+        file_path = download_virus_data(tax_id, outdir_path, email)
+        if file_path:
             reference_file = Path(file_path)
             return process_reference(reference_file, outdir_path)
         else:
             logger.error("No file could be processed.")
             raise ValueError("No file could be processed.")
-
     else:
         logger.error("Either 'tax_id' or 'genbank_file' must be provided.")
         raise ValueError("Either 'tax_id' or 'genbank_file' must be provided.")
 
 
-def process_reference(reference_file: Path, outdir_path):
+def process_reference(
+    reference_file: Path, outdir_path
+) -> tuple[dict[str, tuple[int, int]], str]:
     """
     Processes a GenBank file to extract gene information and sequence.
 
     Args:
-        reference_file (Path): Path object with Genbank file.
-        outdir_path (Path): Path object with outdir directory.
+        reference_file: Path object with Genbank file.
+        outdir_path : Path object with outdir directory.
 
     Returns:
-        Tuple[Dict[str, Tuple[int, int]], str]: A tuple with gene coordinates (dictionary)
-                                                and genome sequence (string).
+        A tuple with gene coordinates (dictionary) and genome sequence (string).
     """
     logger.info("Processing reference")
 
@@ -81,7 +86,7 @@ def process_reference(reference_file: Path, outdir_path):
 
     except Exception as e:
         logger.error(f"An error occurred: {e}")
-        return {}
+        return {}, ""
 
 
 def extract_gene_info(organism):
@@ -98,16 +103,17 @@ def extract_gene_info(organism):
     return gene_coordinates
 
 
-def download_virus_data(tax_id, outdir: Path):
+def download_virus_data(tax_id: str, outdir: Path, email: str):
     """
     Downloads virus gene data from GenBank based on a given taxonomic ID.
 
     Args:
-        tax_id (str): Taxonomic ID of the virus.
-        outdir (Path): Path to the output directory.
+        tax_id : Taxonomic ID of the virus.
+        outdir : Path to the output directory.
+        email : Email for Entrez API.
     """
     try:
-        Entrez.email = "dummy@dummy.com"
+        Entrez.email = email
         search_handle = Entrez.esearch(
             db="nucleotide", term=f"txid{tax_id}[Organism:exp]", retmax=1
         )
