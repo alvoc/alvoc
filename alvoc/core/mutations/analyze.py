@@ -2,7 +2,7 @@ from alvoc.core.mutations.utils import mut_idx, write_csv, snv_name, mut_in_col,
 from alvoc.core.mutations.visualize import plot_mutations
 import pysam
 
-def find_mutants(file_path, mutations_path, min_depth, save_img, csv, mut_lins):
+def find_mutants(file_path: str, mutations_path: str, min_depth: int, save_img: bool, csv: bool, mut_lins: dict):
     """Find mutations in sequencing data, either from BAM files or a sample list. Uses a dictionary of mutation lineages provided as a parameter.
 
     Args:

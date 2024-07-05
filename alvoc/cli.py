@@ -38,16 +38,16 @@ def convert_nucleotide(
     convert_nt(tax_id, genbank_file, mut, outdir)
 
 
-@cli.command()
-def find_mutants_command(
-    samples_path: str,
-    mutations_path: str = typer.Option(None, "--mutations-path", "-m", help='Path to mutations'),
-    min_depth: int = typer.Option(40, "--min-depth", "-d", help='Minimum depth'),
-    save_img: bool = typer.Option(False, "--save-img", "-s", help='Save image'),
-    csv: bool = typer.Option(False, "--csv", "-c", help='Save as CSV')
-):
-    """Find mutants in samples"""
-    find_mutants(samples_path, mutations_path, min_depth, save_img, csv)
+# @cli.command()
+# def find_mutants_command(
+#     samples_path: str,
+#     mutations_path: str = typer.Option(None, "--mutations-path", "-m", help='Path to mutations'),
+#     min_depth: int = typer.Option(40, "--min-depth", "-d", help='Minimum depth'),
+#     save_img: bool = typer.Option(False, "--save-img", "-s", help='Save image'),
+#     csv: bool = typer.Option(False, "--csv", "-c", help='Save as CSV')
+# ):
+#     """Find mutants in samples"""
+#     find_mutants(samples_path, mutations_path, min_depth, save_img, csv)
 
 # @cli.command()
 # def find_lineages_command(
