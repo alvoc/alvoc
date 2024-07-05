@@ -11,7 +11,7 @@ def precompute(
     genbank_file: str | None = None,
     outdir: str = "",
     email: str = "example@example.com",
-) -> tuple[dict[str, tuple[int, int]], str]:
+) -> tuple[dict[str, tuple[int, int]], str, Path]:
     """
     Processes a GenBank file to extract gene information and sequence, or alternatively pass in a virus taxonomic ID
     to automatically generate the necessary reference data. At least one of 'tax_id' or 'genbank_file' must be provided.
@@ -51,7 +51,7 @@ def precompute(
 
 def process_reference(
     reference_file: Path, outdir_path
-) -> tuple[dict[str, tuple[int, int]], str]:
+) -> tuple[dict[str, tuple[int, int]], str, Path]:
     """
     Processes a GenBank file to extract gene information and sequence.
 
@@ -82,11 +82,11 @@ def process_reference(
             )
         logger.info("Reference processing complete and data saved")
 
-        return gene_coordinates, genome_sequence
+        return gene_coordinates, genome_sequence, outdir_path
 
     except Exception as e:
         logger.error(f"An error occurred: {e}")
-        return {}, ""
+        return {}, "", Path(".")
 
 
 def extract_gene_info(organism):

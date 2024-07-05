@@ -6,7 +6,6 @@ def init_logger(level=logging.DEBUG, log_file='app.log'):
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S',
         handlers=[
-            logging.FileHandler(log_file),
             logging.StreamHandler()
         ]
     )

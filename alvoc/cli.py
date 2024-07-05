@@ -2,24 +2,37 @@ import typer
 
 from alvoc.core.logging import init_logger
 from alvoc.core.mutations import aa, nt
+from alvoc.core.mutations.analyze import find_mutants as find_mutants_internal
 from alvoc.core.precompute import precompute
 # from alvoc.core.lineages import find_lineages
 # from alvoc.core.amplicons import amplicon_coverage, gc_depth
 
-cli = typer.Typer(help="Identify frequencies of concerning mutations from aligned reads")
+cli = typer.Typer(
+    help="Identify frequencies of concerning mutations from aligned reads"
+)
+
 
 @cli.callback()
 def callback():
     init_logger()
 
-    pass 
+    pass
+
 
 @cli.command()
 def convert_amino_acid(
-    tax_id: str | None = typer.Option(None, help="Taxonomic ID of the virus, required if no GenBank file is provided"),
-    genbank_file: str | None = typer.Option(None, help="Path to the GenBank file, required if no tax ID is provided"),
-    mut: str = typer.Option(..., help="Amino acid mutation in the format 'GENE:aaPOSITIONaaNEW'"),
-    outdir: str = typer.Option(".", help="Output directory for results and intermediate data")
+    tax_id=typer.Option(
+        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
+    ),
+    genbank_file=typer.Option(
+        None, help="Path to the GenBank file, required if no tax ID is provided"
+    ),
+    mut: str = typer.Option(
+        ..., help="Amino acid mutation in the format 'GENE:aaPOSITIONaaNEW'"
+    ),
+    outdir: str = typer.Option(
+        ".", help="Output directory for results and intermediate data"
+    ),
 ):
     """
     Convert amino acid mutation to nucleotide mutations for a given virus
@@ -33,15 +46,24 @@ def convert_amino_acid(
     Returns:
         A list of nucleotide mutations.
     """
-    genes, seq = precompute(tax_id, genbank_file, outdir)
+    genes, seq, _ = precompute(tax_id, genbank_file, outdir)
     return aa(mut, genes, seq)
+
 
 @cli.command()
 def convert_nucleotide(
-    tax_id: str | None = typer.Option(None, help="Taxonomic ID of the virus, required if no GenBank file is provided"),
-    genbank_file: str | None = typer.Option(None, help="Path to the GenBank file, required if no tax ID is provided"),
-    mut: str = typer.Option(..., help="Nucleotide mutation in the format 'BASENPOSBASE'"),
-    outdir: str = typer.Option(".", help="Output directory for results and intermediate data")
+    tax_id=typer.Option(
+        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
+    ),
+    genbank_file=typer.Option(
+        None, help="Path to the GenBank file, required if no tax ID is provided"
+    ),
+    mut: str = typer.Option(
+        ..., help="Nucleotide mutation in the format 'BASENPOSBASE'"
+    ),
+    outdir: str = typer.Option(
+        ".", help="Output directory for results and intermediate data"
+    ),
 ):
     """
     Convert nucleotide mutation to amino acid mutation for a given virus.
@@ -55,20 +77,26 @@ def convert_nucleotide(
     Returns:
         The amino acid mutation.
     """
-    genes, seq = precompute(tax_id, genbank_file, outdir)
+    genes, seq, _ = precompute(tax_id, genbank_file, outdir)
     return nt(mut, genes, seq)
 
 
 @cli.command()
-def find_mutants_command(
+def find_mutants(
     samples_path: str,
-    tax_id: str | None = typer.Option(None, help="Taxonomic ID of the virus, required if no GenBank file is provided"),
-    genbank_file: str | None = typer.Option(None, help="Path to the GenBank file, required if no tax ID is provided"),
-    mutations_path: str = typer.Option(None, "--mutations-path", "-m", help='Path to mutations'),
-    min_depth: int = typer.Option(40, "--min-depth", "-d", help='Minimum depth'),
-    save_img: bool = typer.Option(False, "--save-img", "-s", help='Save image'),
-    csv: bool = typer.Option(False, "--csv", "-c", help='Save as CSV'),
-    outdir: str = typer.Option(".", help="Output directory for results and intermediate data")
+    tax_id: str = typer.Option(
+        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
+    ),
+    genbank_file: str = typer.Option(
+        None, help="Path to the GenBank file, required if no tax ID is provided"
+    ),
+    mutations_path: str = typer.Option(
+        None, "--mutations-path", "-m", help="Path to mutations"
+    ),
+    min_depth: int = typer.Option(40, "--min-depth", "-d", help="Minimum depth"),
+    outdir: str = typer.Option(
+        ".", help="Output directory for results and intermediate data"
+    ),
 ):
     """
     Find mutations in sequencing data, either from BAM files or a sample list. Uses a dictionary of mutation lineages provided as a parameter.
@@ -79,15 +107,17 @@ def find_mutants_command(
         file_path: Path to the file containing sample information or BAM file.
         mutations_path: Path to the file containing mutations or mutation identifier.
         min_depth: Minimum depth for mutation analysis.
-        save_img: Whether to save a plot image.
-        csv: Whether to generate a CSV file.
         outdir : Output directory for results and intermediate data. Defaults to the current directory.
 
     Returns:
         Prints number of reads with and without each mutation and generates a heatmap showing their frequencies.
     """
-    genes, seq = precompute(tax_id, genbank_file, outdir)
-    pass 
+    genes, seq, out = precompute(tax_id, genbank_file, outdir)
+    mut_lins = {}
+    find_mutants_internal(
+        samples_path, mutations_path, min_depth, mut_lins, genes, seq, out
+    )
+
 
 # @cli.command()
 # def find_lineages_command(

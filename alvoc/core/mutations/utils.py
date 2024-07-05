@@ -86,7 +86,7 @@ def print_mut_results(mut_results, min_depth):
     print('{}/{} mutations covered'.format(cov, len(mut_results)))
     print('{}/{} mutations detected'.format(mut_cov, len(mut_results)))
     
-def mut_idx(mut, genes, seq):
+def mut_idx(mut, genes, seq) -> int:
     """Get the index of the mutation for sorting purposes.
 
     Args:
@@ -97,22 +97,23 @@ def mut_idx(mut, genes, seq):
     Returns:
         int: The first genomic index of the mutation if available, otherwise -1.
     """
-    snvs = parse_mutation(mut, genes, seq)  # Assumes that parse_mutation doesn't require mut_lins
+    snvs = parse_mutation(mut, genes, seq)
     return snvs[0][1] if snvs else -1
 
-def write_csv(sample_results, sample_names, min_depth, home_lab, mutants_name):
+def write_csv(sample_results, sample_names, min_depth, mutants_name, outdir):
     """Write mutation fractions to a CSV file.
 
     Args:
         sample_results (list): List of dictionaries containing mutation results.
         sample_names (list): Names of the samples.
         min_depth (int): Minimum read depth to include data in the output.
-        home_lab (str): Base directory for saving the file.
-        mutants_name (str): Filename suffix for the CSV.
+        mutants_name (str): Filename prefix for the CSV.
+        outdir (str): Base directory for saving the file.
     """
     names = list(sample_results[0].keys())
     csv_headers = ['Mutation'] + [f'{name} %' for name in sample_names]
     csv_rows = [[name] + [str(round(mut_results[name][0] / (mut_results[name][0] + mut_results[name][1]), 4) if (mut_results[name][0] + mut_results[name][1]) >= min_depth else -1) for mut_results in sample_results] for name in names]
+    csv_path = outdir / f"{mutants_name}_mutations.csv"
 
-    with open(f'{home_lab}_{mutants_name}_mutations.csv', 'w') as file:
+    with open(csv_path, 'w') as file:
         file.write('\n'.join(','.join(row) for row in [csv_headers] + csv_rows))

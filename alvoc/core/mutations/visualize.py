@@ -3,14 +3,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def plot_mutations(sample_results, sample_names, min_depth, img_path, return_fractions = False):
+def plot_mutations(sample_results, sample_names, min_depth, mutants_name, outdir, return_fractions = False):
     """Plot mutation fractions across multiple samples.
 
     Args:
         sample_results (list): List of dictionaries containing mutation results.
         sample_names (list): Names of the samples.
         min_depth (int): Minimum read depth to include data in the plot.
-        img_path (str): Path to save the plot image. If None, the plot is shown.
+        mutants_name (str): Filename prefix for the CSV.
+        outdir (str): Base directory for saving the file.
+        return_fractions (bool): test parameter for retrieving fractions
     """
     sns.set_theme()
     names = list(sample_results[0].keys())
@@ -66,6 +68,7 @@ def plot_mutations(sample_results, sample_names, min_depth, img_path, return_fra
     plt.xlabel("Sample")
     plt.xticks(rotation=30, ha="right", rotation_mode="anchor")
     plt.ylabel("Mutation") 
+    img_path = outdir / f"{mutants_name}_mutations.png"
     if img_path is not None:
         plt.savefig(img_path, dpi=300)
     else:
