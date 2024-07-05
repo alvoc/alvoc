@@ -21,7 +21,7 @@ CODONS = {
 
 NTS = 'ACGT'
 
-def aa(mut, genes, seq):
+def aa(mut: str, genes : dict, seq : str):
     """
     Convert amino acid mutation to nucleotide mutations.
 
@@ -66,7 +66,7 @@ def aa(mut, genes, seq):
 
     return nt_muts
 
-def nt(mut, genes, seq):
+def nt(mut: str, genes : dict, seq : str):
     """
     Convert nucleotide mutation to amino acid mutation.
 

@@ -3,17 +3,25 @@ from Bio import SeqIO, Entrez
 from pathlib import Path
 
 from alvoc.core import logging
+
 logger = logging.get_logger()
 
-def prepare(tax_id="", genbank_file="", outdir=""):
+
+def prepare(tax_id=None, genbank_file=None, outdir=""):
     """
-    Processes a GenBank file to extract gene information and sequence. Alternatively pass in a virus of interest to automatically generate the necessary reference data.
+    Processes a GenBank file to extract gene information and sequence, or alternatively pass in a virus taxonomic ID to automatically generate the necessary reference data. At least one of 'tax_id' or 'genbank_file' must be provided.
 
     Args:
-        tax_id (str): Taxonomic ID of the virus.
-        genbank_file (str): Path to the GenBank file.
-        outdir (str): Output directory for results and intermediate data.
+        tax_id (str, optional): Taxonomic ID of the virus. Required if 'genbank_file' is not provided.
+        genbank_file (str, optional): Path to the GenBank file. Required if 'tax_id' is not provided.
+        outdir (str, optional): Output directory for results and intermediate data. Defaults to the current directory.
 
+    Returns:
+        Tuple[Dict[str, Tuple[int, int]], str]: A tuple with gene coordinates (dictionary)
+                                                and genome sequence (string).
+
+    Raises:
+        ValueError: If neither 'tax_id' nor 'genbank_file' is provided.
     """
     outdir_path = Path(outdir)
     if not outdir_path.is_dir():
@@ -22,25 +30,22 @@ def prepare(tax_id="", genbank_file="", outdir=""):
 
     if genbank_file:
         reference_file = Path(genbank_file)
-        
-        process_reference(reference_file, outdir_path)
-        return True
+        return process_reference(reference_file, outdir_path)
     elif tax_id:
         file_path = download_virus_data(tax_id, outdir_path)
         if file_path is not None:
             reference_file = Path(file_path)
-            process_reference(reference_file, outdir_path)
-            return True
+            return process_reference(reference_file, outdir_path)
         else:
             logger.error("No file could be processed.")
             raise ValueError("No file could be processed.")
-        
+
     else:
         logger.error("Either 'tax_id' or 'genbank_file' must be provided.")
         raise ValueError("Either 'tax_id' or 'genbank_file' must be provided.")
-    
 
-def process_reference(reference_file : Path, outdir_path):
+
+def process_reference(reference_file: Path, outdir_path):
     """
     Processes a GenBank file to extract gene information and sequence.
 
@@ -48,31 +53,43 @@ def process_reference(reference_file : Path, outdir_path):
         reference_file (Path): Path object with Genbank file.
         outdir_path (Path): Path object with outdir directory.
 
+    Returns:
+        Tuple[Dict[str, Tuple[int, int]], str]: A tuple with gene coordinates (dictionary)
+                                                and genome sequence (string).
     """
     logger.info("Processing reference")
 
     try:
         organism = next(SeqIO.parse(reference_file.as_posix(), "genbank"))
         gene_coordinates = extract_gene_info(organism)
-        
-        file_path = outdir_path / 'gene_data.json'
+        genome_sequence = str(organism.seq)
 
-        with open(file_path, 'w') as f:
-            json.dump({
-                "gene_coordinates": gene_coordinates,
-                "genome_sequence": str(organism.seq)
-            }, f, indent=4)
+        file_path = outdir_path / "gene_data.json"
+
+        with open(file_path, "w") as f:
+            json.dump(
+                {
+                    "gene_coordinates": gene_coordinates,
+                    "genome_sequence": genome_sequence,
+                },
+                f,
+                indent=4,
+            )
         logger.info("Reference processing complete and data saved")
-    
+
+        return gene_coordinates, genome_sequence
+
     except Exception as e:
         logger.error(f"An error occurred: {e}")
+        return {}
+
 
 def extract_gene_info(organism):
     gene_coordinates = {}
     for feature in organism.features:
-        if feature.type == 'gene':
+        if feature.type == "gene":
             try:
-                gene = feature.qualifiers['gene'][0]
+                gene = feature.qualifiers["gene"][0]
                 start = int(feature.location.start)
                 end = int(feature.location.end)
                 gene_coordinates[gene] = [start, end]
@@ -80,7 +97,8 @@ def extract_gene_info(organism):
                 logger.info(f"Skipping feature with no 'gene' qualifier: {feature}")
     return gene_coordinates
 
-def download_virus_data(tax_id, outdir : Path):
+
+def download_virus_data(tax_id, outdir: Path):
     """
     Downloads virus gene data from GenBank based on a given taxonomic ID.
 
@@ -90,18 +108,26 @@ def download_virus_data(tax_id, outdir : Path):
     """
     try:
         Entrez.email = "dummy@dummy.com"
-        search_handle = Entrez.esearch(db="nucleotide", term=f"txid{tax_id}[Organism:exp]", retmax=1)
+        search_handle = Entrez.esearch(
+            db="nucleotide", term=f"txid{tax_id}[Organism:exp]", retmax=1
+        )
         search_results = Entrez.read(search_handle)
         search_handle.close()
-        
-        if not isinstance(search_results, dict) or 'IdList' not in search_results or not search_results['IdList']:
+
+        if (
+            not isinstance(search_results, dict)
+            or "IdList" not in search_results
+            or not search_results["IdList"]
+        ):
             raise Exception(f"No results found for tax ID: {tax_id}")
 
         virus_id = search_results["IdList"][0]
-        fetch_handle = Entrez.efetch(db="nucleotide", id=virus_id, rettype="gb", retmode="text")
-        
+        fetch_handle = Entrez.efetch(
+            db="nucleotide", id=virus_id, rettype="gb", retmode="text"
+        )
+
         file_path = outdir / "gene_data.gb"
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             f.write(fetch_handle.read())
         fetch_handle.close()
         logger.info(f"Downloaded data for tax ID {tax_id} and saved to {file_path}")
