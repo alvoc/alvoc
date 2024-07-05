@@ -1,5 +1,5 @@
 import pytest
-from alvoc.core.mutations.convert import aa, nt
+from alvoc.core.utils.convert import aa, nt
 
 @pytest.fixture
 def sample_data():

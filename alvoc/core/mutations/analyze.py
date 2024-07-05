@@ -1,20 +1,23 @@
 from pathlib import Path
-from alvoc.core.mutations.utils import (
+from alvoc.core.utils.parse import (
     mut_idx,
-    write_csv,
     snv_name,
-    mut_in_col,
     parse_mutation,
+)
+from alvoc.core.utils.export import write_csv
+
+from alvoc.core.mutations.visualize import plot_mutations
+from alvoc.core.mutations.helpers import (
+    mut_in_col,
     print_mut_results,
 )
-from alvoc.core.mutations.visualize import plot_mutations
 import pysam
 
 
 def find_mutants(
     file_path: str,
     mutations_path: str,
-    min_depth: int, 
+    min_depth: int,
     mut_lins: dict,
     genes: dict,
     seq: str,
@@ -25,15 +28,16 @@ def find_mutants(
     Args:
         file_path: Path to the file containing sample information or BAM file.
         mutations_path: Path to the file containing mutations or mutation identifier.
-        min_depth: Minimum depth for mutation analysis. 
+        min_depth: Minimum depth for mutation analysis.
         mut_lins: Dictionary containing mutation lineages and their occurrences.
         outdir : Output directory for results and intermediate data. Defaults to the current directory.
 
     Returns:
         None: The function directly modifies files and outputs results.
     """
-    sample_results, sample_names = [], [] 
-     # Function to adapt mut_idx for sorting
+    sample_results, sample_names = [], []
+
+    # Function to adapt mut_idx for sorting
     def mut_idx_adapter(mut):
         return mut_idx(mut, genes, seq)
 
@@ -59,7 +63,9 @@ def find_mutants(
             samples = [line.split("\t") for line in file.read().split("\n") if line]
         for sample in samples:
             if sample[0].endswith(".bam"):
-                sample_results.append(find_mutants_in_bam(sample[0], mutations, genes, seq))
+                sample_results.append(
+                    find_mutants_in_bam(sample[0], mutations, genes, seq)
+                )
                 sample_names.append(sample[1])
                 print_mut_results(sample_results[-1], min_depth)
 
