@@ -17,7 +17,10 @@ def precompute(
     to automatically generate the necessary reference data. At least one of 'tax_id' or 'genbank_file' must be provided.
 
     Args:
-        options: An instance of PrecomputeOptions containing all necessary parameters.
+        tax_id : Taxonomic ID of the virus. Required if 'genbank_file' is not provided.
+        genbank_file : Path to the GenBank file. Required if 'tax_id' is not provided.
+        email : Email for accessing Entrez api.
+        outdir : Output directory for results and intermediate data. Defaults to the current directory.
 
     Returns:
         A tuple with gene coordinates (dictionary) and genome sequence (string).

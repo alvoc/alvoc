@@ -23,12 +23,11 @@ def find_mutants(
     """Find mutations in sequencing data, either from BAM files or a sample list. Uses a dictionary of mutation lineages provided as a parameter.
 
     Args:
-        file_path (str): Path to the file containing sample information or BAM file.
-        mutations_path (str): Path to the file containing mutations or mutation identifier.
-        min_depth (int): Minimum depth for mutation analysis.
-        save_img (bool): Whether to save a plot image.
-        csv (bool): Whether to generate a CSV file.
-        mut_lins (dict): Dictionary containing mutation lineages and their occurrences.
+        file_path: Path to the file containing sample information or BAM file.
+        mutations_path: Path to the file containing mutations or mutation identifier.
+        min_depth: Minimum depth for mutation analysis. 
+        mut_lins: Dictionary containing mutation lineages and their occurrences.
+        outdir : Output directory for results and intermediate data. Defaults to the current directory.
 
     Returns:
         None: The function directly modifies files and outputs results.
