@@ -68,9 +68,7 @@ def plot_mutations(sample_results, sample_names, min_depth, mutants_name, outdir
     plt.xlabel("Sample")
     plt.xticks(rotation=30, ha="right", rotation_mode="anchor")
     plt.ylabel("Mutation") 
-    img_path = outdir / f"{mutants_name}_mutations.png"
-    if img_path is not None:
-        plt.savefig(img_path, dpi=300)
-    else:
-        plt.show()
+    img_path = outdir / f"{mutants_name}_mutations.png" 
+    plt.savefig(img_path, dpi=300) 
+    plt.show()
    

@@ -140,3 +140,4 @@ def download_virus_data(tax_id: str, outdir: Path, email: str):
         return file_path.as_posix()
     except Exception as e:
         logger.error(f"An error occurred while downloading data: {e}")
+        raise
