@@ -1,7 +1,8 @@
 from pathlib import Path
 
+import pandas as pd
 import pysam
-import pandas as pd 
+
 from alvoc.core.mutations.helpers import mut_in_col, print_mut_results
 from alvoc.core.mutations.visualize import plot_mutations
 from alvoc.core.utils.parse import mut_idx, parse_mutation, snv_name
@@ -68,10 +69,11 @@ def find_mutants(
 
     plot_mutations(sample_results, sample_names, min_depth, mutants_name, outdir)
 
+
 def compute_mutation_df(sample_results, sample_names, min_depth):
     data = []
     for name in sample_results[0].keys():
-        row = {'Mutation': name}
+        row = {"Mutation": name}
         for i, sample in enumerate(sample_results):
             total = sample[name][0] + sample[name][1]
             if total >= min_depth:
@@ -80,6 +82,7 @@ def compute_mutation_df(sample_results, sample_names, min_depth):
                 row[f"{sample_names[i]} %"] = -1
         data.append(row)
     return pd.DataFrame(data)
+
 
 def find_mutants_in_bam(bam_path, mutations, genes, seq):
     """Identify and quantify mutations from a BAM file.
@@ -128,7 +131,7 @@ def update_mutation_results(pileupcolumn, parsed_muts, mut_results, pos):
                 mut_results[mut][snv_name(snv)] = [muts, not_muts]
 
 
-def evaluate_mutation_frequencies(mut_results : dict):
+def evaluate_mutation_frequencies(mut_results: dict):
     """Evaluate the frequency of each mutation in the results.
 
     Args:

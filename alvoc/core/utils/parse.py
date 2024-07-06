@@ -27,7 +27,8 @@ def parse_mutation(mut: str, genes: dict, seq: str):
     muts = aa(mut, genes, seq) if ":" in mut else [mut]
     return [parse_snv(m) for m in muts]
 
-def parse_mutations(mutations : list[str], genes : dict, seq : str) -> list[str]:
+
+def parse_mutations(mutations: list[str], genes: dict, seq: str) -> list[str]:
     """
     Parse a list of mutations into single nucleotide changes and amino acid changes.
     Simple nucleotide changes are returned directly, while amino acid changes are
@@ -46,13 +47,15 @@ def parse_mutations(mutations : list[str], genes : dict, seq : str) -> list[str]
 
     # Categorize mutations based on their type indicated by the presence of ':'
     for mut in mutations:
-        if ':' in mut:
+        if ":" in mut:
             aas.append(mut)
         else:
             nts.append(mut)
 
     # Process amino acid mutations to convert them into nucleotide changes
-    processed_aas = [nt_change for aa_mut in aas for nt_change in aa(aa_mut, genes, seq)]
+    processed_aas = [
+        nt_change for aa_mut in aas for nt_change in aa(aa_mut, genes, seq)
+    ]
 
     # Combine and return the nucleotide changes and processed amino acid changes
     return nts + processed_aas

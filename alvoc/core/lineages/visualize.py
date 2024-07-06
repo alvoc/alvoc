@@ -62,7 +62,9 @@ def plot_lineages(sample_results, sample_names, outdir, all_lins=False):
     plt.show()
 
 
-def plot_lineages_timeseries(sample_results: list[dict], sample_names: list[str], outdir: Path):
+def plot_lineages_timeseries(
+    sample_results: list[dict], sample_names: list[str], outdir: Path
+):
     """Plot time series data for lineages across multiple samples.
 
     Args:

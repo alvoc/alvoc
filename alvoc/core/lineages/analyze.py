@@ -1,8 +1,9 @@
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression
 from ortools.linear_solver import pywraplp
+from sklearn.linear_model import LinearRegression
 
 from alvoc.core import logging
 from alvoc.core.lineages.visualize import (
@@ -73,7 +74,7 @@ def find_lineages(
             unique=unique,
             l2=l2,
         )
-        
+
         if result is None:
             print("No coverage or analysis couldn't be performed.")
         else:
@@ -108,22 +109,26 @@ def find_lineages(
     if sample_results:
         lineage_df = compute_lineage_df(sample_results, sample_names)
         lineage_df.to_csv(outdir / "lineages.csv", index=False)
- 
+
         if ts:
             plot_lineages_timeseries(sample_results, sample_names, outdir)
         else:
             plot_lineages(sample_results, sample_names, outdir, bool(lineages_path))
 
+
 def compute_lineage_df(sample_results, sample_names):
     rows = []
     for i, sample in enumerate(sample_results):
-        row = {'Sample name': sample_names[i]}
+        row = {"Sample name": sample_names[i]}
         for key, value in sample.items():
             row[key] = round(value, 3)
         rows.append(row)
-    headers = ['Sample name'] + sorted(set(key for sample in sample_results for key in sample.keys()))
+    headers = ["Sample name"] + sorted(
+        set(key for sample in sample_results for key in sample.keys())
+    )
     df = pd.DataFrame(rows, columns=headers)
     return df
+
 
 def find_lineages_in_bam(
     bam_path: Path,
