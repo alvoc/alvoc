@@ -107,7 +107,7 @@ def plot_lineages_timeseries(
 
 
 def show_lineage_predictions(
-    sample_results: dict, X: ndarray, Y: ndarray, covered_muts: list
+    sample_results: dict, X: ndarray, Y: ndarray, covered_muts: list, outdir: Path
 ):
     """Display predicted versus observed lineage contributions for mutations.
 
@@ -116,6 +116,7 @@ def show_lineage_predictions(
         X: Lineage mutation profiles.
         Y: Observed mutation frequencies.
         covered_muts (list): Mutations that meet coverage requirements.
+        outdir : Output directory for plot
     """
     sns.set_theme()
 
@@ -136,14 +137,16 @@ def show_lineage_predictions(
     df = pd.DataFrame(d, index=idx)
     df.plot.bar(stacked=True, rot=0)
     plt.tight_layout()
+    plt.savefig(outdir / "lineage_predictions.png", dpi=300)
     plt.show()
 
 
-def show_lineage_pie(sample_results: dict):
+def show_lineage_pie(sample_results: dict, outdir: Path):
     """Plot a pie chart of lineage distributions.
 
     Args:
         sample_results: Lineage distribution data.
+        outdir : Output directory for plot
     """
     sns.set_theme()
 
@@ -153,4 +156,5 @@ def show_lineage_pie(sample_results: dict):
     df = pd.DataFrame({"Fraction": freqs}, index=merged_lins)
     df = df[df["Fraction"] > 0]  # Filter zero fractions
     df.plot.pie(y="Fraction", legend=False, autopct="%1.1f%%", ylabel="")
+    plt.savefig(outdir / "lineage_pie.png", dpi=300)
     plt.show()

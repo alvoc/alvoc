@@ -80,8 +80,8 @@ def find_lineages(
         else:
             sr, X, Y, covered_muts = result
             if show_stacked:
-                show_lineage_predictions(sr, X, Y, covered_muts)
-                show_lineage_pie(sr)
+                show_lineage_predictions(sr, X, Y, covered_muts, outdir)
+                show_lineage_pie(sr, outdir)
             sample_results.append(sr)
             sample_names.append("")
     else:
