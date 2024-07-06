@@ -1,11 +1,11 @@
+from pathlib import Path
 import typer
 
 from alvoc.core.logging import init_logger
 from alvoc.core.mutations.analyze import find_mutants as find_mutants_internal
 from alvoc.core.precompute import precompute
 from alvoc.core.utils.convert import aa, nt
-
-# from alvoc.core.lineages import find_lineages
+from alvoc.core.lineages import find_lineages
 # from alvoc.core.amplicons import amplicon_coverage, gc_depth
 
 cli = typer.Typer(
@@ -91,20 +91,52 @@ def find_mutants(
     )
 
 
-# @cli.command()
-# def find_lineages_command(
-#     samples_path: str,
-#     lineages_path: str = typer.Option(None, "--lineages-path", "-l", help='Path to lineages'),
-#     ts: bool = typer.Option(False, "--ts", "-t", help='Time series'),
-#     csv: bool = typer.Option(False, "--csv", "-c", help='Save as CSV'),
-#     min_depth: int = typer.Option(40, "--min-depth", "-d", help='Minimum depth'),
-#     show_stacked: bool = typer.Option(False, "--show-stacked", "-s", help='Show stacked'),
-#     unique: bool = typer.Option(False, "--unique", "-u", help='Unique'),
-#     save_img: bool = typer.Option(False, "--save-img", "-s", help='Save image'),
-#     l2: bool = typer.Option(False, "--l2", "-l2", help='Level 2')
-# ):
-#     """Find lineages in samples"""
-#     find_lineages(samples_path, lineages_path=lineages_path, ts=ts, csv=csv, min_depth=min_depth, show_stacked=show_stacked, unique=unique, save_img=save_img, l2=l2)
+@cli.command()
+def find_lineages_command(
+    samples_path: str,
+    tax_id: str = typer.Option(
+        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
+    ),
+    genbank_file: str = typer.Option(
+        None, help="Path to the GenBank file, required if no tax ID is provided"
+    ),
+    lineages_path: str = typer.Option(
+        None, "--lineages-path", "-l", help="Path to lineages"
+    ),
+    black_list: list[str] = typer.Option(
+        None, "--black-list", "-b", help="List of lineages to black list"
+    ),
+    ts: bool = typer.Option(False, "--ts", "-t", help="Time series"),
+    min_depth: int = typer.Option(40, "--min-depth", "-d", help="Minimum depth"),
+    show_stacked: bool = typer.Option(
+        False, "--show-stacked", "-s", help="Show stacked"
+    ),
+    unique: bool = typer.Option(False, "--unique", "-u", help="Unique"),
+    l2: bool = typer.Option(False, "--l2", "-l2", help="Level 2"),
+    outdir: str = typer.Option(
+        ".", help="Output directory for results and intermediate data"
+    ),
+):
+    """Find lineages in samples"""
+    genes, seq, out = precompute(tax_id, genbank_file, outdir)
+    mut_lins = {}
+    file_path = Path(samples_path)
+    lineages_file = Path(lineages_path)
+    find_lineages(
+        file_path=file_path,
+        mut_lins=mut_lins,
+        genes=genes,
+        seq=seq,
+        outdir=out,
+        black_list=black_list,
+        lineages_path=lineages_file,
+        ts=ts,
+        min_depth=min_depth,
+        show_stacked=show_stacked,
+        unique=unique,
+        l2=l2
+    )
+
 
 # @cli.command()
 # def amplicon_coverage_command(samples_path: str):
