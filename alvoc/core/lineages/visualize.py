@@ -106,7 +106,7 @@ def plot_lineages_timeseries(
     plt.savefig(outdir / "lineages_timeseries.png", dpi=300)
 
 
-def show_lineage_predictions(
+def plot_lineage_predictions(
     sample_results: dict, X: ndarray, Y: ndarray, covered_muts: list, outdir: Path
 ):
     """Display predicted versus observed lineage contributions for mutations.
@@ -141,7 +141,7 @@ def show_lineage_predictions(
     plt.show()
 
 
-def show_lineage_pie(sample_results: dict, outdir: Path):
+def plot_lineage_pie(sample_results: dict, outdir: Path):
     """Plot a pie chart of lineage distributions.
 
     Args:

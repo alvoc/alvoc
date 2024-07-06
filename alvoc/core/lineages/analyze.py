@@ -9,8 +9,8 @@ from alvoc.core import logging
 from alvoc.core.lineages.visualize import (
     plot_lineages,
     plot_lineages_timeseries,
-    show_lineage_pie,
-    show_lineage_predictions,
+    plot_lineage_pie,
+    plot_lineage_predictions,
 )
 from alvoc.core.mutations.analyze import find_mutants_in_bam
 from alvoc.core.utils.parse import parse_mutations
@@ -80,8 +80,8 @@ def find_lineages(
         else:
             sr, X, Y, covered_muts = result
             if show_stacked:
-                show_lineage_predictions(sr, X, Y, covered_muts, outdir)
-                show_lineage_pie(sr, outdir)
+                plot_lineage_predictions(sr, X, Y, covered_muts, outdir)
+                plot_lineage_pie(sr, outdir)
             sample_results.append(sr)
             sample_names.append("")
     else:
