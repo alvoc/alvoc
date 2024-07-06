@@ -1,9 +1,16 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 
 
-def plot_mutations(sample_results, sample_names, min_depth, mutants_name, outdir, return_fractions = False):
+def plot_mutations(
+    sample_results,
+    sample_names,
+    min_depth,
+    mutants_name,
+    outdir,
+    return_fractions=False,
+):
     """Plot mutation fractions across multiple samples.
 
     Args:
@@ -19,14 +26,14 @@ def plot_mutations(sample_results, sample_names, min_depth, mutants_name, outdir
     sample_counts = [
         [mut_results[mut] for mut in names] for mut_results in sample_results
     ]
-    num_mutations = len(names) 
+    num_mutations = len(names)
 
     mut_fractions = [[] for _ in range(num_mutations)]
     for i in range(num_mutations):
         for counts in sample_counts:
             count = counts[i]
             total = count[0] + count[1]
-            fraction = count[0]/total if total >= min_depth else -1
+            fraction = count[0] / total if total >= min_depth else -1
             mut_fractions[i].append(round(fraction, 4))
 
     if return_fractions:
@@ -56,7 +63,7 @@ def plot_mutations(sample_results, sample_names, min_depth, mutants_name, outdir
 
     sns.heatmap(
         mut_fractions,
-        annot=True, 
+        annot=True,
         mask=no_reads,
         cmap=sns.cm.rocket_r,
         xticklabels=sample_names,
@@ -67,8 +74,7 @@ def plot_mutations(sample_results, sample_names, min_depth, mutants_name, outdir
     )
     plt.xlabel("Sample")
     plt.xticks(rotation=30, ha="right", rotation_mode="anchor")
-    plt.ylabel("Mutation") 
-    img_path = outdir / f"{mutants_name}_mutations.png" 
-    plt.savefig(img_path, dpi=300) 
+    plt.ylabel("Mutation")
+    img_path = outdir / f"{mutants_name}_mutations.png"
+    plt.savefig(img_path, dpi=300)
     plt.show()
-   

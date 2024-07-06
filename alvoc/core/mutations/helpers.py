@@ -1,7 +1,7 @@
 from pysam import PileupColumn
 
 
-def mut_in_col(pileupcolumn: PileupColumn, mut : str):
+def mut_in_col(pileupcolumn: PileupColumn, mut: str):
     """Count the occurrences and non-occurrences of a mutation in a pileup column.
 
     Args:
@@ -42,5 +42,5 @@ def print_mut_results(mut_results, min_depth):
             if muts > 0:
                 mut_cov += 1
 
-    print('{}/{} mutations covered'.format(cov, len(mut_results)))
-    print('{}/{} mutations detected'.format(mut_cov, len(mut_results)))
+    print("{}/{} mutations covered".format(cov, len(mut_results)))
+    print("{}/{} mutations detected".format(mut_cov, len(mut_results)))

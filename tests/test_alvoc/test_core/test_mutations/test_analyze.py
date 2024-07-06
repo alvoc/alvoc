@@ -39,4 +39,3 @@
 #         mock_find_mutants_in_bam.assert_called_with('sample1.bam', ['mut1', 'mut2'])
 #         mock_samfile.assert_called_with('sample1.bam', 'rb')
 #         # Add more assertions here based on your actual function requirements and expected behaviors
-

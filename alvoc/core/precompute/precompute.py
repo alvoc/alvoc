@@ -1,6 +1,8 @@
 import json
-from Bio import SeqIO, Entrez
 from pathlib import Path
+
+from Bio import Entrez, SeqIO
+
 from alvoc.core import logging
 
 logger = logging.get_logger()

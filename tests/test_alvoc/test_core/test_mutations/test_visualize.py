@@ -1,8 +1,10 @@
 from pathlib import Path
-import pytest
-from alvoc.core.mutations.visualize import plot_mutations
-from matplotlib import pyplot as plt
 from unittest.mock import patch
+
+import pytest
+from matplotlib import pyplot as plt
+
+from alvoc.core.mutations.visualize import plot_mutations
 
 
 @pytest.fixture

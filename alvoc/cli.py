@@ -1,9 +1,10 @@
 import typer
 
 from alvoc.core.logging import init_logger
-from alvoc.core.utils.convert import aa, nt
 from alvoc.core.mutations.analyze import find_mutants as find_mutants_internal
 from alvoc.core.precompute import precompute
+from alvoc.core.utils.convert import aa, nt
+
 # from alvoc.core.lineages import find_lineages
 # from alvoc.core.amplicons import amplicon_coverage, gc_depth
 
@@ -81,7 +82,7 @@ def find_mutants(
     ),
 ):
     """
-    Find mutations in sequencing data, either from BAM files or a sample list. Uses a dictionary of mutation lineages provided as a parameter. 
+    Find mutations in sequencing data, either from BAM files or a sample list. Uses a dictionary of mutation lineages provided as a parameter.
     """
     genes, seq, out = precompute(tax_id, genbank_file, outdir)
     mut_lins = {}

@@ -152,9 +152,11 @@ def nt(mut: str, genes: dict, seq: str) -> str:
             codon_start = start + (aa_idx - 1) * 3
             codon = list(seq[codon_start : codon_start + 3])
             codon[nt_offset] = new_base
-            new_acid = CODONS.get("".join(codon), '?')  # '?' as a placeholder for unknown codon translation
+            new_acid = CODONS.get(
+                "".join(codon), "?"
+            )  # '?' as a placeholder for unknown codon translation
 
-            acid = CODONS.get("".join(seq[codon_start : codon_start + 3]), '?')
+            acid = CODONS.get("".join(seq[codon_start : codon_start + 3]), "?")
 
             return f"{gene}:{acid}{aa_idx}{new_acid}"
 
