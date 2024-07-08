@@ -6,7 +6,7 @@ from alvoc.core.mutations.analyze import find_mutants as find_mutants_internal
 from alvoc.core.precompute import precompute
 from alvoc.core.utils.convert import aa, nt
 from alvoc.core.lineages import find_lineages
-# from alvoc.core.amplicons import amplicon_coverage, gc_depth
+from alvoc.core.amplicons import amplicon_coverage as ac, gc_depth as gc
 
 cli = typer.Typer(
     help="Identify frequencies of concerning mutations from aligned reads"
@@ -66,7 +66,9 @@ def convert_nucleotide(
 
 @cli.command()
 def find_mutants(
-    samples_path: str,
+    samples_path: str = typer.Argument(
+        ..., help="Path to the file listing samples or a single BAM file."
+    ),
     tax_id: str = typer.Option(
         None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
     ),
@@ -93,7 +95,9 @@ def find_mutants(
 
 @cli.command()
 def find_lineages_command(
-    samples_path: str,
+    samples_path: str = typer.Argument(
+        ..., help="Path to the file listing samples or a single BAM file."
+    ),
     tax_id: str = typer.Option(
         None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
     ),
@@ -134,19 +138,65 @@ def find_lineages_command(
         min_depth=min_depth,
         show_stacked=show_stacked,
         unique=unique,
-        l2=l2
+        l2=l2,
     )
 
 
-# @cli.command()
-# def amplicon_coverage_command(samples_path: str):
-#     """Get amplicon coverage"""
-#     amplicon_coverage(samples_path)
+@cli.command()
+def amplicon_coverage(
+    samples_path: str = typer.Argument(
+        ..., help="Path to the file listing samples or a single BAM file."
+    ),
+    inserts_path: str = typer.Argument(
+        ..., help="Path to the CSV file detailing the regions (amplicons) to evaluate."
+    ),
+    tax_id: str = typer.Option(
+        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
+    ),
+    genbank_file: str = typer.Option(
+        None, help="Path to the GenBank file, required if no tax ID is provided"
+    ),
+    outdir: str = typer.Option(
+        ".", help="Output directory for results and intermediate data"
+    ),
+):
+    """Get amplicon coverage"""
+    _, seq, out = precompute(tax_id, genbank_file, outdir)
+    ac(
+        file_path=Path(samples_path),
+        inserts=Path(inserts_path),
+        sequence=seq,
+        outdir=out,
+    )
 
-# @cli.command()
-# def gc_depth_command(samples_path: str):
-#     """Get GC depth"""
-#     gc_depth(samples_path)
+
+@cli.command()
+def gc_depth(
+    samples_path: str = typer.Argument(
+        ..., help="Path to the file listing samples or a single BAM file."
+    ),
+    inserts_path: str = typer.Argument(
+        ..., help="Path to the CSV file detailing the regions (amplicons) to evaluate."
+    ),
+    tax_id: str = typer.Option(
+        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
+    ),
+    genbank_file: str = typer.Option(
+        None, help="Path to the GenBank file, required if no tax ID is provided"
+    ),
+    outdir: str = typer.Option(
+        ".", help="Output directory for results and intermediate data"
+    ),
+):
+    """Get GC depth"""
+    _, seq, out = precompute(tax_id, genbank_file, outdir)
+    gc(
+        file_path=Path(samples_path),
+        inserts=Path(inserts_path),
+        sequence=seq,
+        outdir=out,
+    )
+
 
 if __name__ == "__main__":
     cli()

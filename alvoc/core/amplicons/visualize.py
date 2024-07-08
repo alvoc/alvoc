@@ -11,17 +11,17 @@ sns.set_theme()
 def plot_depths(
     sample_results: list[dict[str, str]],
     sample_names: list[str],
-    inserts: list,
+    inserts: list[list],
     outdir: Path,
 ):
     """
     Plots the logarithmic depth of sequencing results across samples and pools using a bar plot.
 
     Args:
-    sample_results (list): A list of dictionaries where keys are amplicon numbers and values are depths.
-    sample_names (list): A list of names corresponding to the samples in `sample_results`.
-    inserts (list): A list of data used for generating additional sample metadata.
-    outdir : Output directory for plot.
+        sample_results: A list of dictionaries where keys are amplicon numbers and values are depths.
+        sample_names: A list of names corresponding to the samples in `sample_results`.
+        inserts: A list of data used for generating additional sample metadata.
+        outdir: Output directory for plot.
 
     """
     samples = sum([len(inserts) * [name] for name in sample_names], [])
@@ -54,7 +54,7 @@ def plot_depths(
 def plot_depths_gc(
     sample_results: list[dict[str, str]],
     sample_names: list[str],
-    inserts: list,
+    inserts: list[list],
     outdir: Path
 ):
     """
@@ -62,10 +62,10 @@ def plot_depths_gc(
     and computes the Pearson correlation coefficient.
 
     Args:
-    sample_results (list): A list of dictionaries where keys are amplicon numbers and values are depths.
-    sample_names (list): A list of names corresponding to the samples in `sample_results`.
-    inserts (list): A list of data used for extracting GC content.
-    outdir : Output directory for plot.
+        sample_results: A list of dictionaries where keys are amplicon numbers and values are depths.
+        sample_names: A list of names corresponding to the samples in `sample_results`.
+        inserts: A list of data used for extracting GC content.
+        outdir: Output directory for plot.
 
     """
     depths = sample_results[0]
