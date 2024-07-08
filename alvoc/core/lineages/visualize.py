@@ -15,7 +15,7 @@ def plot_lineages(sample_results, sample_names, outdir, all_lins=False):
     Args:
         sample_results (list): List of dictionaries with sample results.
         sample_names (list): List of sample names.
-        outdir : Output directory for results and intermediate data. Defaults to the current directory.
+        outdir : Output directory for plot.
         all_lins (bool): Flag to show all lineages or only significant ones.
     """
     sns.set_theme()
@@ -70,7 +70,8 @@ def plot_lineages_timeseries(
     Args:
         sample_results: List of dictionaries with sample results.
         sample_names: List of sample names including date and location tags.
-        outdir : Output directory for results and intermediate data. Defaults to the current directory.
+        outdir : Output directory for plot.
+
     """
     sns.set_theme()
 
@@ -116,7 +117,7 @@ def plot_lineage_predictions(
         X: Lineage mutation profiles.
         Y: Observed mutation frequencies.
         covered_muts (list): Mutations that meet coverage requirements.
-        outdir : Output directory for plot
+        outdir : Output directory for plot.
     """
     sns.set_theme()
 
@@ -146,7 +147,7 @@ def plot_lineage_pie(sample_results: dict, outdir: Path):
 
     Args:
         sample_results: Lineage distribution data.
-        outdir : Output directory for plot
+        outdir : Output directory for plot.
     """
     sns.set_theme()
 
