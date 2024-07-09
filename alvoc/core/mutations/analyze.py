@@ -105,7 +105,7 @@ def find_mutants_in_bam(bam_path, mutations, genes, seq):
 
         # Iterate over each pileup column in the BAM file
         for pileupcolumn in samfile.pileup(stepper="nofilter"):
-            pos = pileupcolumn.reference_start + 1
+            pos = pileupcolumn.reference_pos + 1
             update_mutation_results(pileupcolumn, parsed_muts, mut_results, pos)
 
     output = evaluate_mutation_frequencies(mut_results)
