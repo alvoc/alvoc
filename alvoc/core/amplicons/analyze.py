@@ -106,12 +106,12 @@ def find_depths_in_bam(
     Reads a BAM file and computes the depth of reads at positions defined by `inserts`.
 
     Args:
-    bam_path: Path to the BAM file.
-    inserts: List of Lists containing information about the regions (amplicons) of interest.
-    max_depth: Maximum depth to be considered to prevent memory overflow.
+        bam_path: Path to the BAM file.
+        inserts: List of Lists containing information about the regions (amplicons) of interest.
+        max_depth: Maximum depth to be considered to prevent memory overflow.
 
     Returns:
-    A dictionary mapping amplicon identifiers to their corresponding read depth.
+        A dictionary mapping amplicon identifiers to their corresponding read depth.
     """
     amplified = {}
     with pysam.AlignmentFile(bam_path.as_posix(), "rb") as samfile:
