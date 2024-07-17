@@ -25,12 +25,7 @@ def precompute(
     Returns:
         A tuple with gene coordinates (dictionary) and genome sequence (string).
 
-    Raises:
-        ValueError: If neither 'tax_id' nor 'genbank_file' is provided.
-    """
-    if not (virus):
-        raise ValueError("Either 'tax_id' or 'genbank_file' must be provided.")
-
+    """ 
     outdir_path = Path(outdir)
     if not outdir_path.is_dir():
         logger.info(f"Creating directory at {outdir_path}")

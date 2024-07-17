@@ -12,21 +12,14 @@ from alvoc.core.precompute.precompute import (
     process_reference,
 )
 
-
-def test_precompute_no_input():
-    with pytest.raises(ValueError) as exc_info:
-        precompute()
-    assert "Either 'tax_id' or 'genbank_file' must be provided." in str(exc_info.value)
-
-
 def test_precompute_with_genbank_file(tmp_path):
-    genbank_file = tmp_path / "dummy.gb"
-    genbank_file.write_text(">Dummy data")
+    virus = tmp_path / "dummy.gb"
+    virus.write_text(">Dummy data")
     outdir = tmp_path / "output"
 
     with patch("alvoc.core.precompute.precompute.process_reference") as mocked_process:
         mocked_process.return_value = ({"gene": (1, 100)}, "ACGT", outdir)
-        result = precompute(genbank_file=str(genbank_file), outdir=str(outdir))
+        result = precompute(virus=str(virus), outdir=str(outdir))
         assert result[0] == {"gene": (1, 100)}
         assert result[1] == "ACGT"
         assert result[2] == outdir
@@ -44,7 +37,7 @@ def test_precompute_with_tax_id(tmp_path, caplog):
         ) as mocked_process:
             mocked_download.return_value = tmp_path / "downloaded.gb"
             mocked_process.return_value = ({"gene": (1, 100)}, "ACGT", outdir)
-            result = precompute(tax_id="12345", outdir=str(outdir), email=email)
+            result = precompute(virus="12345", outdir=str(outdir), email=email)
             mocked_download.assert_called_once_with("12345", outdir, email)
             assert "No file could be processed." not in caplog.text
             assert result[0] == {"gene": (1, 100)}
