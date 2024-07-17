@@ -42,6 +42,7 @@ jobs:
         uses: commitizen-tools/commitizen-action@0.21.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          changelog_increment_filename: body.md
 
       - name: Update README
         run: python scripts/create_readme.py assets/template-README.md README.md --project_title "Alvoc" --project_organization "alvoc" --project_repo "alvoc" --project_version ${{steps.cz.outputs.version}} --project_documentation_url "https://alvoc.github.io"
@@ -50,47 +51,58 @@ jobs:
         run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
       
       - uses: stefanzweifel/git-auto-commit-action@v5
-
-  build-executables:
-    runs-on: ${{ matrix.os }}
-    needs: bump-version
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-
-    outputs:
-      version: ${{ needs.bump-version.outputs.version }}
-
-    steps:
-      - name: Base Setup
-        uses: ./.github/workflows/actions/setup-base
-        with:
-          environment: prod
-
-      - name: Get pyinstaller
-        run: poetry add pyinstaller
-
-      - name: Build binary
-        run: pyinstaller alvoc/cli.py --name alvoc-${{ matrix.os }}-${{ needs.bump-version.outputs.version }} --collect-submodules shellingham
-
-      - name: Archive binary
-        uses: actions/upload-artifact@v2
-        with:
-          name: alcov-${{ matrix.os }}-${{ needs.bump-version.outputs.version }}
-          path: dist/
-
-  publish-release:
-    needs: build-executables
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v2
-        with:
-          path: dist/
+        with: 
+          commit_message: Bump README version
       
-      - name: Publish release
+      - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/*
+          body_path: "body.md"
+          tag_name: ${{ steps.cz.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+  # build-executables:
+  #   runs-on: ${{ matrix.os }}
+  #   needs: bump-version
+  #   strategy:
+  #     matrix:
+  #       os: [macos-latest, ubuntu-latest, windows-latest]
+
+  #   outputs:
+  #     version: ${{ needs.bump-version.outputs.version }}
+
+  #   steps:
+  #     - name: Base Setup
+  #       uses: ./.github/workflows/actions/setup-base
+  #       with:
+  #         environment: prod
+
+  #     - name: Get pyinstaller
+  #       run: poetry add pyinstaller
+
+  #     - name: Build binary
+  #       run: pyinstaller alvoc/cli.py --name alvoc-${{ matrix.os }}-${{ needs.bump-version.outputs.version }} --collect-submodules shellingham
+
+  #     - name: Archive binary
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: alcov-${{ matrix.os }}-${{ needs.bump-version.outputs.version }}
+  #         path: dist/
+
+  # publish-release:
+  #   needs: build-executables
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Download all artifacts
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         path: dist/
+      
+  #     - name: Publish release
+  #       uses: softprops/action-gh-release@v1
+  #       with:
+  #         body_path: body.md
+  #         files: dist/*
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
