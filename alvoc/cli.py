@@ -6,7 +6,7 @@ from alvoc.core.mutations.analyze import find_mutants as find_mutants_internal
 from alvoc.core.precompute import precompute
 from alvoc.core.utils.convert import aa, nt
 from alvoc.core.lineages import find_lineages
-from alvoc.core.amplicons import amplicon_coverage as ac, gc_depth as gc
+from alvoc.core.amplicons import Amplicons
 
 cli = typer.Typer(
     help="Identify frequencies of concerning mutations from aligned reads"
@@ -162,12 +162,12 @@ def amplicon_coverage(
 ):
     """Get amplicon coverage"""
     _, seq, out = precompute(tax_id, genbank_file, outdir)
-    ac(
+    Amplicons(
         file_path=Path(samples_path),
         inserts=Path(inserts_path),
         sequence=seq,
         outdir=out,
-    )
+    ).amplicon_coverage()
 
 
 @cli.command()
@@ -190,12 +190,13 @@ def gc_depth(
 ):
     """Get GC depth"""
     _, seq, out = precompute(tax_id, genbank_file, outdir)
-    gc(
+    Amplicons(
         file_path=Path(samples_path),
         inserts=Path(inserts_path),
         sequence=seq,
         outdir=out,
-    )
+    ).gc_depth()
+
 
 
 if __name__ == "__main__":
