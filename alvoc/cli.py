@@ -17,82 +17,69 @@ cli = typer.Typer(
 @cli.callback()
 def callback():
     init_logger()
-
     pass
+
+
+# commonOptions
+virus: str = typer.Argument(
+    ..., help="Taxonomic ID of the virus, or path to the GenBank file"
+)
+outdir: str = typer.Option(
+    ".", help="Output directory for results and intermediate data"
+)
 
 
 @cli.command()
 def convert_amino_acid(
-    tax_id=typer.Option(
-        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
-    ),
-    genbank_path=typer.Option(
-        None, help="Path to the GenBank file, required if no tax ID is provided"
-    ),
-    mut: str = typer.Option(
+    virus=virus,
+    mut: str = typer.Argument(
         ..., help="Amino acid mutation in the format 'GENE:aaPOSITIONaaNEW'"
     ),
-    outdir: str = typer.Option(
-        ".", help="Output directory for results and intermediate data"
-    ),
+    outdir=outdir,
 ):
     """
     Convert amino acid mutation to nucleotide mutations for a given virus.
     """
-    genes, seq, _ = precompute(tax_id, genbank_path, outdir)
+    genes, seq, _ = precompute(virus, outdir)
     return aa(mut, genes, seq)
 
 
 @cli.command()
 def convert_nucleotide(
-    tax_id=typer.Option(
-        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
-    ),
-    genbank_path=typer.Option(
-        None, help="Path to the GenBank file, required if no tax ID is provided"
-    ),
+    virus=virus,
     mut: str = typer.Option(
         ..., help="Nucleotide mutation in the format 'BASENPOSBASE'"
     ),
-    outdir: str = typer.Option(
-        ".", help="Output directory for results and intermediate data"
-    ),
+    outdir=outdir,
 ):
     """
     Convert nucleotide mutation to amino acid mutation for a given virus.
     """
-    genes, seq, _ = precompute(tax_id, genbank_path, outdir)
+    genes, seq, _ = precompute(virus, outdir)
     return nt(mut, genes, seq)
 
 
 @cli.command()
 def find_mutants(
+    virus = virus,
     samples_path: str = typer.Argument(
         ..., help="Path to the file listing samples or a single BAM file."
     ),
     mut_lin_path: str = typer.Argument(
         ..., help="Path to the json file containing mutation lineages."
     ),
-    tax_id: str = typer.Option(
-        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
-    ),
-    genbank_path: str = typer.Option(
-        None, help="Path to the GenBank file, required if no tax ID is provided"
-    ),
-    mutations_path: str = typer.Option(
-        None, "--mutations-path", "-m", help="Path to mutations"
+    mutations_path: str = typer.Argument(
+        ...,  help="Path to mutations"
     ),
     min_depth: int = typer.Option(40, "--min-depth", "-d", help="Minimum depth"),
-    outdir: str = typer.Option(
-        ".", help="Output directory for results and intermediate data"
-    ),
+    outdir = outdir
 ):
     """
     Find mutations in sequencing data, either from BAM files or a sample list.
     """
-    genes, seq, out = precompute(tax_id, genbank_path, outdir)
+    genes, seq, out = precompute(virus, outdir)
     mut_lins = {}
-    with open(mut_lin_path, 'r') as file:
+    with open(mut_lin_path, "r") as file:
         mut_lins = json.load(file)
     find_mutants_internal(
         samples_path, mutations_path, min_depth, mut_lins, genes, seq, out
@@ -101,17 +88,12 @@ def find_mutants(
 
 @cli.command()
 def find_lineages_command(
+    virus = virus,
     samples_path: str = typer.Argument(
         ..., help="Path to the file listing samples or a single BAM file."
     ),
     mut_lin_path: str = typer.Argument(
         ..., help="Path to the json file containing mutation lineages."
-    ),
-    tax_id: str = typer.Option(
-        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
-    ),
-    genbank_path: str = typer.Option(
-        None, help="Path to the GenBank file, required if no tax ID is provided"
     ),
     lineages_path: str = typer.Option(
         None, "--lineages-path", "-l", help="Path to lineages"
@@ -126,16 +108,14 @@ def find_lineages_command(
     ),
     unique: bool = typer.Option(False, "--unique", "-u", help="Unique"),
     l2: bool = typer.Option(False, "--l2", "-l2", help="Level 2"),
-    outdir: str = typer.Option(
-        ".", help="Output directory for results and intermediate data"
-    ),
+    outdir = outdir
 ):
     """Find lineages in samples"""
-    genes, seq, out = precompute(tax_id, genbank_path, outdir) 
+    genes, seq, out = precompute(virus, outdir)
     file_path = Path(samples_path)
     lineages_file = Path(lineages_path)
     mut_lins = {}
-    with open(mut_lin_path, 'r') as file:
+    with open(mut_lin_path, "r") as file:
         mut_lins = json.load(file)
     find_lineages(
         file_path=file_path,
@@ -155,24 +135,17 @@ def find_lineages_command(
 
 @cli.command()
 def amplicon_coverage(
+    virus = virus,
     samples_path: str = typer.Argument(
         ..., help="Path to the file listing samples or a single BAM file."
     ),
     inserts_path: str = typer.Argument(
         ..., help="Path to the CSV file detailing the regions (amplicons) to evaluate."
     ),
-    tax_id: str = typer.Option(
-        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
-    ),
-    genbank_path: str = typer.Option(
-        None, help="Path to the GenBank file, required if no tax ID is provided"
-    ),
-    outdir: str = typer.Option(
-        ".", help="Output directory for results and intermediate data"
-    ),
+    outdir = outdir
 ):
     """Get amplicon coverage"""
-    _, seq, out = precompute(tax_id, genbank_path, outdir)
+    _, seq, out = precompute(virus, outdir)
     Amplicons(
         file_path=Path(samples_path),
         inserts=Path(inserts_path),
@@ -183,31 +156,23 @@ def amplicon_coverage(
 
 @cli.command()
 def gc_depth(
+    virus = virus,
     samples_path: str = typer.Argument(
         ..., help="Path to the file listing samples or a single BAM file."
     ),
     inserts_path: str = typer.Argument(
         ..., help="Path to the CSV file detailing the regions (amplicons) to evaluate."
     ),
-    tax_id: str = typer.Option(
-        None, help="Taxonomic ID of the virus, required if no GenBank file is provided"
-    ),
-    genbank_path: str = typer.Option(
-        None, help="Path to the GenBank file, required if no tax ID is provided"
-    ),
-    outdir: str = typer.Option(
-        ".", help="Output directory for results and intermediate data"
-    ),
+    outdir = outdir
 ):
     """Get GC depth"""
-    _, seq, out = precompute(tax_id, genbank_path, outdir)
+    _, seq, out = precompute(virus, outdir)
     Amplicons(
         file_path=Path(samples_path),
         inserts=Path(inserts_path),
         sequence=seq,
         outdir=out,
     ).gc_depth()
-
 
 
 if __name__ == "__main__":

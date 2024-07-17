@@ -9,8 +9,7 @@ logger = logging.get_logger()
 
 
 def precompute(
-    tax_id: str | None = None,
-    genbank_file: str | None = None,
+    virus: str ,
     outdir: str = "",
     email: str = "example@example.com",
 ) -> tuple[dict[str, tuple[int, int]], str, Path]:
@@ -19,8 +18,7 @@ def precompute(
     to automatically generate the necessary reference data. At least one of 'tax_id' or 'genbank_file' must be provided.
 
     Args:
-        tax_id : Taxonomic ID of the virus. Required if 'genbank_file' is not provided.
-        genbank_file : Path to the GenBank file. Required if 'tax_id' is not provided.
+        virus : Taxonomic ID of the virus or Path to the GenBank file
         email : Email for accessing Entrez api.
         outdir : Output directory for results and intermediate data. Defaults to the current directory.
 
@@ -30,7 +28,7 @@ def precompute(
     Raises:
         ValueError: If neither 'tax_id' nor 'genbank_file' is provided.
     """
-    if not (tax_id or genbank_file):
+    if not (virus):
         raise ValueError("Either 'tax_id' or 'genbank_file' must be provided.")
 
     outdir_path = Path(outdir)
@@ -38,20 +36,17 @@ def precompute(
         logger.info(f"Creating directory at {outdir_path}")
         outdir_path.mkdir(parents=True, exist_ok=True)
 
-    if genbank_file:
-        reference_file = Path(genbank_file)
+    reference_file = Path(virus)
+    if reference_file.exists():
         return process_reference(reference_file, outdir_path)
-    elif tax_id:
-        file_path = download_virus_data(tax_id, outdir_path, email)
+    else:
+        file_path = download_virus_data(virus, outdir_path, email)
         if file_path:
             reference_file = Path(file_path)
             return process_reference(reference_file, outdir_path)
         else:
             logger.error("No file could be processed.")
-            raise ValueError("No file could be processed.")
-    else:
-        logger.error("Either 'tax_id' or 'genbank_file' must be provided.")
-        raise ValueError("Either 'tax_id' or 'genbank_file' must be provided.")
+            raise ValueError("No file could be processed.") 
 
 
 def process_reference(
