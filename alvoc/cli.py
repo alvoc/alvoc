@@ -88,7 +88,7 @@ def find_mutants(
     ),
 ):
     """
-    Find mutations in sequencing data, either from BAM files or a sample list. Uses a dictionary of mutation lineages provided as a parameter.
+    Find mutations in sequencing data, either from BAM files or a sample list.
     """
     genes, seq, out = precompute(tax_id, genbank_path, outdir)
     mut_lins = {}
