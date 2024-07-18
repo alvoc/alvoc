@@ -79,7 +79,7 @@ jobs:
     needs: bump-version
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest]
 
     outputs:
       version: ${{ needs.bump-version.outputs.version }}

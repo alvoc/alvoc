@@ -28,11 +28,10 @@
 There are several ways to install this project. 
 
 ### Latest Release
-Download the latest release for your platform:
+Download the latest release for your platform. Note that we don't provide a windows build since some of our dependencies (pysam) don't support it:
 
 - [Linux](https://github.com/{project_organization}/{project_repo}/releases/latest/download/{project_repo}-linux-{project_version})
 - [macOS](https://github.com/{project_organization}/{project_repo}/releases/latest/download/{project_repo}-macos-{project_version})
-- [Windows](https://github.com/{project_organization}/{project_repo}/releases/latest/download/{project_repo}-windows-{project_version})
 
 ### With Pip
 Pip is the default package installer for Python. 
