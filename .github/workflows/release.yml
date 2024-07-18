@@ -85,6 +85,9 @@ jobs:
       version: ${{ needs.bump-version.outputs.version }}
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+    
       - name: Base Setup
         uses: ./.github/workflows/actions/setup-base
         with:
