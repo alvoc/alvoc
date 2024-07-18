@@ -1,51 +1,46 @@
 
 <br />
 <div align="center">
-   <a href="https://github.com/{{PROJECT_ORGANIZATION}}/{{PROJECT_TITLE}}" style="display: inline-flex; align-items: center; text-decoration: none;">
-    <img src="assets/icon.svg" alt="Logo" width="100" height="100" style="margin-right: 10px;">
-    <span style="font-size: 2em; color: #000;">{{Project Title}}</span>
+   <a href="https://github.com/alvoc/alvoc" style="display: inline-flex; align-items: center; text-decoration: none;">
+    <img src="assets/logo.svg" alt="Logo" width="100" height="100" style="margin-right: 10px;">
   </a>
 
   <p align="center">
-    Abundance learning for variants of concern
+     Alvoc : Abundance learning for variants of concern
     <br />
     <br />
-    <a href="https://github.com/{{PROJECT_ORGANIZATION}}/{{PROJECT_TITLE}}/issues">Report Bug</a>
+    <a href="https://github.com/alvoc/alvoc/issues">Report Bug</a>
     |
-    <a href="https://github.com/{{PROJECT_ORGANIZATION}}/{{PROJECT_TITLE}}/issues">Request Feature</a>
+    <a href="https://github.com/alvoc/alvoc/issues">Request Feature</a>
     <br />
     <br />
-    <a href="https://github.com/{{PROJECT_ORGANIZATION}}/{{PROJECT_TITLE}}"> Documentation </a>
+    <a href="https://github.com/alvoc/alvoc"> Documentation </a>
 
   </p>
 </div>
 
-{{PROJECT_TITLE}} is used for estimating the abundace of variants of concern from wastewater sequencing data.
+Alvoc is used for estimating the abundace of variants of concern from wastewater sequencing data.
 
 ## Built With
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) 
-## Installation
-There are several ways to install this project. 
+## Installation 
+<!-- There are several ways to use this tool
 
-### Latest Release
-Download the latest release for your platform:
-
-- [Linux](https://github.com/{{PROJECT_ORGANIZATION}}/{{PROJECT_REPO}}/releases/latest/download/{{PROJECT_NAME}}-linux-{{PROJECT_VERSION}})
-- [macOS](https://github.com/{{PROJECT_ORGANIZATION}}/{{PROJECT_REPO}}/releases/latest/download/{{PROJECT_NAME}}-macos-{{PROJECT_VERSION}})
-- [Windows](https://github.com/{{PROJECT_ORGANIZATION}}/{{PROJECT_REPO}}/releases/latest/download/{{PROJECT_NAME}}-windows-{{PROJECT_VERSION}})
+### Executable
+You can download the [latest release](https://github.com/alvoc/alvoc/releases/latest) for your platform. Note that we don't provide a windows build since some of our dependencies (pysam) don't support it.  -->
 
 ### With Pip
 Pip is the default package installer for Python. 
 
 1. Install [Python](https://www.python.org/downloads/). We recommend using [pyenv](https://github.com/pyenv/pyenv) for python version management.
-2. Install the stable release of {{PROJECT_NAME}} from PyPi. 
+<!-- 2. Install the stable release of alvoc from PyPi. 
 ```
-pip install {{PROJECT_NAME}}
-``` 
-3. Alternatively, install it directly from source (main branch).
+pip install alvoc
+```  -->
+3. Install it directly from source (main branch).
 ```
-pip install git+https://github.com/{{PROJECT_ORGANIZATION}}/{{PROJECT_REPO}}.git@main
+pip install git+https://github.com/alvoc/alvoc.git@main
 ``` 
 ## Usage/Examples
 
@@ -54,7 +49,7 @@ pip install git+https://github.com/{{PROJECT_ORGANIZATION}}/{{PROJECT_REPO}}.git
 
 ## Documentation
 
-For the full details on how to use {{PROJECT_NAME}} please refer to our [documentation]({{PROJECT_DOCUMENTATION_URL}})
+For the full details on how to use Alvoc please refer to our [documentation](https://alvoc.github.io)
 
 ## Contributing
 
