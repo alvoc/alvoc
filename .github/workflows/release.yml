@@ -50,9 +50,14 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog_increment_filename: body.md
-
+      
+      - id: repo-basename
+        run: |
+            echo "value=`basename ${{ github.repository }}`" >> $GITHUB_OUTPUT
+        shell: bash
+    
       - name: Update README
-        run: python scripts/create_readme.py assets/template-README.md README.md --project_title "Alvoc" --project_organization ${{ github.repository_owner }} --project_repo ${{ github.repository.name }} --project_version ${{steps.cz.outputs.version}} --project_documentation_url "https://${{ github.repository.owner}}.github.io"
+        run: python scripts/create_readme.py assets/template-README.md README.md --project_title "Alvoc" --project_organization ${{ github.repository_owner }} --project_repo ${{ steps.repo-basename.outputs.value }} --project_version ${{steps.cz.outputs.version}} --project_documentation_url "https://${{ github.repository.owner}}.github.io"
 
       - name: Print Version
         run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
