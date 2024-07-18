@@ -34,11 +34,11 @@ You can download the [latest release](https://github.com/alvoc/alvoc/releases/la
 Pip is the default package installer for Python. 
 
 1. Install [Python](https://www.python.org/downloads/). We recommend using [pyenv](https://github.com/pyenv/pyenv) for python version management.
-2. Install the stable release of alvoc from PyPi. 
+<!-- 2. Install the stable release of alvoc from PyPi. 
 ```
 pip install alvoc
-``` 
-3. Alternatively, install it directly from source (main branch).
+```  -->
+3. Install it directly from source (main branch).
 ```
 pip install git+https://github.com/alvoc/alvoc.git@main
 ``` 
