@@ -14,6 +14,7 @@ numpy = "^2.0.0"
 pysam = "^0.22.1"
 scikit-learn = "^1.5.1"
 ortools = "^9.10.4067"
+biopython = "^1.84"
 
 
 [tool.poetry.group.dev.dependencies]
