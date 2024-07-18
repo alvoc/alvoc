@@ -42,5 +42,5 @@ runs:
         if [ "${{ inputs.environment }}" == "dev" ]; then
           poetry install --with dev --no-root
         else
-          poetry install --no-root
+          poetry install --without dev --no-root
         fi

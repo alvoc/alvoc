@@ -98,7 +98,7 @@ jobs:
         run: poetry add pyinstaller
 
       - name: Build binary
-        run: pyinstaller alvoc/cli.py --name alvoc-${{ matrix.os }}-${{ needs.bump-version.outputs.version }} --collect-submodules shellingham
+        run: poetry run pyinstaller alvoc/cli.py --name alvoc-${{ matrix.os }}-${{ needs.bump-version.outputs.version }} --collect-submodules shellingham
 
       - name: Archive binary
         uses: actions/upload-artifact@v2
