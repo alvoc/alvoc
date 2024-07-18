@@ -1,30 +1,35 @@
 name: Base Python Setup
-description: 'Set up Python environment'
+description: Set up Python environment
 
 inputs:
   environment:
-    description: 'Environment to set up'
+    description: Environment to set up
     required: true
-    default: 'dev'
+    default: dev
+  shell:
+    description: os shell
+    required: true
+    default: bash
 
 runs:
   using: composite
-  steps: 
+  steps:
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: "3.11"
 
     - name: Run image
       uses: abatilo/actions-poetry@v2
       with:
-        poetry-version: '1.8'
-      
+        poetry-version: "1.8"
+
     - name: Setup a local virtual environment (if no poetry.toml file)
+      shell: ${{inputs.shell}}
       run: |
-          poetry config virtualenvs.create true --local
-          poetry config virtualenvs.in-project true --local
-      
+        poetry config virtualenvs.create true --local
+        poetry config virtualenvs.in-project true --local
+
     - uses: actions/cache@v3
       name: Define a cache for the virtual environment based on the dependencies lock file
       with:
@@ -32,9 +37,10 @@ runs:
         key: venv-${{inputs.environment}}-${{ hashFiles('poetry.lock') }}
 
     - name: Setup dependencies
+      shell: ${{inputs.shell}}
       run: |
-          if [ "${{ inputs.environment }}" == "dev" ]; then
-            poetry install --with dev --no-root
-          else
-            poetry install --no-root
-          fi
+        if [ "${{ inputs.environment }}" == "dev" ]; then
+          poetry install --with dev --no-root
+        else
+          poetry install --no-root
+        fi

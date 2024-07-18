@@ -20,6 +20,7 @@ jobs:
         uses: ./.github/workflows/actions/setup-base
         with:
           environment: dev
+          shell: bash
 
       - name: Run tests
         run: poetry run pytest
@@ -75,6 +76,7 @@ jobs:
         uses: ./.github/workflows/actions/setup-base
         with:
           environment: prod
+          shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
 
       - name: Get pyinstaller
         run: poetry add pyinstaller
