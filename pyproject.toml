@@ -16,6 +16,8 @@ scikit-learn = "^1.5.1"
 ortools = "^9.10.4067"
 biopython = "^1.84"
 
+[tool.poetry.scripts]
+alvoc = "alvoc.main:cli"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
