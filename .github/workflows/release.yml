@@ -32,7 +32,8 @@ jobs:
     permissions:
       # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
       contents: write
-
+      pull-requests: write
+      
     outputs:
       version: ${{ steps.cz.outputs.version }}
 
@@ -40,7 +41,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
           fetch-depth: 0 # Important to fetch all history for version calculation
           token: ${{ secrets.GITHUB_TOKEN }}
 
