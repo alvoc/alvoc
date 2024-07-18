@@ -1,0 +1,15 @@
+site_name: Alvoc
+site_url: https://github.com/alvoc/alvoc
+repo_url: https://github.com/alvoc/alvoc
+repo_name: alvoc/alvoc
+theme:
+  name: material
+  logo: assets/icon.svg
+  favicon: assets/icon.svg
+  palette:
+    scheme: slate
+    primary: blue
+    accent: light-blue
+plugins:
+  - search
+  - mkdocstrings
