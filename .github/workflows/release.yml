@@ -66,10 +66,12 @@ jobs:
 
       - name: Print Version
         run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      
+      - uses: EndBug/add-and-commit@v9
         with:
-          commit_message: "docs(readme.md): Bump version in README to ${{steps.cz.outputs.version}}"
+          message: "docs(readme.md): Bump version in README to ${{steps.cz.outputs.version}}"
+          committer_name: GitHub Actions
+          committer_email: actions@github.com
 
   build-executables:
     runs-on: ${{ matrix.os }}
