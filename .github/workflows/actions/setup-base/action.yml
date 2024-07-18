@@ -34,7 +34,7 @@ runs:
     - name: Setup dependencies
       run: |
           if [ "${{ inputs.environment }}" == "dev" ]; then
-            poetry install --with dev
+            poetry install --with dev --no-root
           else
-            poetry install
+            poetry install --no-root
           fi

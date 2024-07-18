@@ -35,7 +35,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Important to fetch all history for version calculation
+          fetch-depth: 0 # Important to fetch all history for version calculation
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
       - id: cz
         name: Create bump and changelog
@@ -45,64 +51,56 @@ jobs:
           changelog_increment_filename: body.md
 
       - name: Update README
-        run: python scripts/create_readme.py assets/template-README.md README.md --project_title "Alvoc" --project_organization "alvoc" --project_repo "alvoc" --project_version ${{steps.cz.outputs.version}} --project_documentation_url "https://alvoc.github.io"
+        run: poetry run python scripts/create_readme.py assets/template-README.md README.md --project_title "Alvoc" --project_organization ${{ github.repository_owner }} --project_repo ${{ github.repository.name }} --project_version ${{steps.cz.outputs.version}} --project_documentation_url "https://${{ github.repository.owner}}.github.io"
 
       - name: Print Version
         run: echo "Bumped to version ${{ steps.cz.outputs.version }}"
-      
+
       - uses: stefanzweifel/git-auto-commit-action@v5
-        with: 
+        with:
           commit_message: Bump README version
-      
-      - name: Release
+
+  build-executables:
+    runs-on: ${{ matrix.os }}
+    needs: bump-version
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    outputs:
+      version: ${{ needs.bump-version.outputs.version }}
+
+    steps:
+      - name: Base Setup
+        uses: ./.github/workflows/actions/setup-base
+        with:
+          environment: prod
+
+      - name: Get pyinstaller
+        run: poetry add pyinstaller
+
+      - name: Build binary
+        run: pyinstaller alvoc/cli.py --name alvoc-${{ matrix.os }}-${{ needs.bump-version.outputs.version }} --collect-submodules shellingham
+
+      - name: Archive binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: alcov-${{ matrix.os }}-${{ needs.bump-version.outputs.version }}
+          path: dist/
+
+  publish-release:
+    needs: build-executables
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: dist/
+
+      - name: Publish release
         uses: softprops/action-gh-release@v1
         with:
-          body_path: "body.md"
-          tag_name: ${{ steps.cz.outputs.version }}
+          body_path: body.md
+          files: dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-  # build-executables:
-  #   runs-on: ${{ matrix.os }}
-  #   needs: bump-version
-  #   strategy:
-  #     matrix:
-  #       os: [macos-latest, ubuntu-latest, windows-latest]
-
-  #   outputs:
-  #     version: ${{ needs.bump-version.outputs.version }}
-
-  #   steps:
-  #     - name: Base Setup
-  #       uses: ./.github/workflows/actions/setup-base
-  #       with:
-  #         environment: prod
-
-  #     - name: Get pyinstaller
-  #       run: poetry add pyinstaller
-
-  #     - name: Build binary
-  #       run: pyinstaller alvoc/cli.py --name alvoc-${{ matrix.os }}-${{ needs.bump-version.outputs.version }} --collect-submodules shellingham
-
-  #     - name: Archive binary
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: alcov-${{ matrix.os }}-${{ needs.bump-version.outputs.version }}
-  #         path: dist/
-
-  # publish-release:
-  #   needs: build-executables
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Download all artifacts
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         path: dist/
-      
-  #     - name: Publish release
-  #       uses: softprops/action-gh-release@v1
-  #       with:
-  #         body_path: body.md
-  #         files: dist/*
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
