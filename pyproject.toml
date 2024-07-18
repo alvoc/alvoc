@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "alvoc"
-version = "0.0.0"
+version = "0.1.0"
 description = ""
 authors = ["mshunjan <manjothunjan@gmail.com>"]
 readme = "README.md"
