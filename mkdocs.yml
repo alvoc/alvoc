@@ -1,0 +1,58 @@
+site_name: Alvoc
+site_url: https://github.com/alvoc/alvoc
+repo_url: https://github.com/alvoc/alvoc
+repo_name: alvoc/alvoc
+
+theme:
+  name: material
+  logo: assets/icon.svg
+  favicon: assets/icon.svg
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/link
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: alvoc
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: blue
+      toggle:
+        icon: material/toggle-switch-off
+        name: Switch to system preference
+
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - header.autohide
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+nav:
+- Home: index.md
+- Changelog: changelog.md
+
+plugins:
+  - search
+  - mkdocstrings
+  - termynal
+
+markdown_extensions:
+  - pymdownx.snippets:
+      base_path: .
+
+copyright: Copyright &copy; 2024 Alvoc
+
+extra_css:
+  - stylesheets/extra.css
