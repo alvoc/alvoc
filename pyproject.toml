@@ -30,6 +30,7 @@ pyinstaller = "^6.9.0"
 mkdocs-material = "^9.5.29"
 mkdocstrings = {extras = ["python"], version = "^0.25.1"}
 pymdown-extensions = "^10.8.1"
+termynal = "^0.12.1"
 
 [tool.commitizen]
 name = "cz_conventional_commits"

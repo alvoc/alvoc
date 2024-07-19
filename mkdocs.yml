@@ -2,10 +2,12 @@ site_name: Alvoc
 site_url: https://github.com/alvoc/alvoc
 repo_url: https://github.com/alvoc/alvoc
 repo_name: alvoc/alvoc
+
 theme:
   name: material
   logo: assets/icon.svg
   favicon: assets/icon.svg
+  custom_dir: docs/theme
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
@@ -34,7 +36,6 @@ theme:
     - navigation.sections
     - navigation.tabs
     - navigation.top
-    - navigation.instant
     - navigation.tracking
     - search.highlight
     - search.share
@@ -46,6 +47,7 @@ nav:
 plugins:
   - search
   - mkdocstrings
+  - termynal
 
 markdown_extensions:
   - pymdownx.snippets:
