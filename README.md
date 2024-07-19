@@ -2,7 +2,7 @@
 <br />
 <div align="center">
    <a href="https://github.com/alvoc/alvoc" style="display: inline-flex; align-items: center; text-decoration: none;">
-    <img src="assets/icon.svg" alt="Logo" width="200" height="200" style="margin-right: 10px;">
+    <img src="docs/assets/icon.svg" alt="Logo" width="200" height="200" style="margin-right: 10px;">
   </a>
 
   <p align="center">

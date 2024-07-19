@@ -12,16 +12,14 @@ theme:
         icon: material/link
         name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: indigo
+      scheme: alvoc
       toggle:
         icon: material/toggle-switch
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: black
-      accent: indigo
+      accent: blue
       toggle:
         icon: material/toggle-switch-off
         name: Switch to system preference
@@ -42,11 +40,8 @@ theme:
     - search.share
     - search.suggest
 nav:
-- Home:
-  - Overview: index.md
-  - Changelog: changelog.md
-  - Credits: credits.md
-  - License: license.md
+- Home: index.md
+- Changelog: changelog.md
 
 plugins:
   - search
