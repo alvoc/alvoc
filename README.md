@@ -1,7 +1,7 @@
 
 <div style="display: flex; justify-content: center; align-items: center; text-align: center; flex-direction: column;">
   <div style="display: flex; align-items: center;">
-    <img src="https://raw.githubusercontent.com/alvoc/alvoc/main/assets/logo.svg" alt="Logo" width="200" height="auto">
+    <img src="https://raw.githubusercontent.com/alvoc/alvoc/main/docs/assets/icon.svg" alt="Logo" width="200" height="auto">
     <span style="font-size: 100px; color: #4e8ada;"> Alvoc </span>
   </div>
 
