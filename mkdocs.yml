@@ -7,9 +7,56 @@ theme:
   logo: assets/icon.svg
   favicon: assets/icon.svg
   palette:
-    scheme: slate
-    primary: blue
-    accent: light-blue
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/link
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off
+        name: Switch to system preference
+
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - header.autohide
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.instant
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+nav:
+- Home:
+  - Overview: index.md
+  - Changelog: changelog.md
+  - Credits: credits.md
+  - License: license.md
+
 plugins:
   - search
   - mkdocstrings
+
+markdown_extensions:
+  - pymdownx.snippets:
+      base_path: .
+
+copyright: Copyright &copy; 2024 Alvoc
+
+extra_css:
+  - stylesheets/extra.css
