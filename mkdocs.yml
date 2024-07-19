@@ -7,7 +7,6 @@ theme:
   name: material
   logo: assets/icon.svg
   favicon: assets/icon.svg
-  custom_dir: docs/theme
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
