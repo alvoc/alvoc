@@ -16,7 +16,7 @@
     <p>
       <a href="https://alvoc.github.io" target="_blank"> Documentation </a>
     </p>
-  </div>
+  </div> 
 </div>
 
 ---
