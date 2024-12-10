@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import asyncio
 
+
 async def download_lineage_list(input_url: str, outdir: Path):
     async with aiohttp.ClientSession() as session:
         async with session.get(input_url) as response:
@@ -12,17 +13,18 @@ async def download_lineage_list(input_url: str, outdir: Path):
             text = await response.text()
 
     lines = text.splitlines()
-    
+
     output_file = outdir / "lineages.txt"
     async with aiofiles.open(output_file, "w") as file:
-        await file.write(lines)
+        await file.write("\n".join(lines))
     values = [
         line.split()[0]
         for line in lines[1:]
         if line.strip() and not line.startswith("*")
     ]
-    
+
     return values  # Directly return the list of lineages
+
 
 async def fetch_lineage_data(session, lineage, base_url, start_date):
     url = f"{base_url}/sample/aggregated?dateFrom={start_date}&pangoLineage={lineage}"
@@ -55,6 +57,7 @@ async def fetch_lineage_data(session, lineage, base_url, start_date):
                 print(f"Error fetching mutations for lineage {lineage}")
     return None
 
+
 async def make_constellations(input_url, outdir, base_url):
     outdir.mkdir(parents=True, exist_ok=True)
     lineages = await download_lineage_list(input_url, outdir)
@@ -62,7 +65,10 @@ async def make_constellations(input_url, outdir, base_url):
     all_lineage_data = {}
 
     async with aiohttp.ClientSession() as session:
-        tasks = [fetch_lineage_data(session, lineage, base_url, start_date) for lineage in lineages]
+        tasks = [
+            fetch_lineage_data(session, lineage, base_url, start_date)
+            for lineage in lineages
+        ]
         results = await asyncio.gather(*tasks)
 
         for result in results:
@@ -74,11 +80,13 @@ async def make_constellations(input_url, outdir, base_url):
     async with aiofiles.open(output_file, "w") as file:
         await file.write(json.dumps(all_lineage_data, indent=4))
 
+
 # Run the asynchronous function
 async def main():
     outdir = Path("constellations")
     input_url = "https://raw.githubusercontent.com/cov-lineages/pango-designation/master/lineage_notes.txt"
     base_url = "https://lapis.cov-spectrum.org/open/v2"
     await make_constellations(input_url, outdir, base_url)
+
 
 asyncio.run(main())
