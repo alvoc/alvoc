@@ -4,7 +4,7 @@ import typer
 
 from alvoc.core.utils.logging import init_logger
 from alvoc.core.mutations.analyze import find_mutants as find_mutants_internal
-from alvoc.core.precompute import precompute
+from alvoc.core.utils.precompute import precompute
 from alvoc.core.utils.convert import aa, nt
 from alvoc.core.lineages import find_lineages as fl
 from alvoc.core.amplicons import Amplicons

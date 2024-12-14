@@ -5,7 +5,7 @@ import pytest
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-from alvoc.core.precompute.precompute import (
+from alvoc.core.utils.precompute import (
     download_virus_data,
     extract_gene_info,
     precompute,
@@ -19,7 +19,7 @@ def test_precompute_with_genbank_file(tmp_path):
 
     with patch("alvoc.core.precompute.precompute.process_reference") as mocked_process:
         mocked_process.return_value = ({"gene": (1, 100)}, "ACGT", outdir)
-        result = precompute(virus=str(virus), outdir=str(outdir))
+        result = precompute(virus=str(virus), outdir=Path(outdir))
         assert result[0] == {"gene": (1, 100)}
         assert result[1] == "ACGT"
         assert result[2] == outdir
@@ -37,7 +37,7 @@ def test_precompute_with_tax_id(tmp_path, caplog):
         ) as mocked_process:
             mocked_download.return_value = tmp_path / "downloaded.gb"
             mocked_process.return_value = ({"gene": (1, 100)}, "ACGT", outdir)
-            result = precompute(virus="12345", outdir=str(outdir), email=email)
+            result = precompute(virus="12345", outdir=Path(outdir), email=email)
             mocked_download.assert_called_once_with("12345", outdir, email)
             assert "No file could be processed." not in caplog.text
             assert result[0] == {"gene": (1, 100)}
