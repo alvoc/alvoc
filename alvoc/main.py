@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import typer
 
-from alvoc.core.logging import init_logger
+from alvoc.core.utils.logging import init_logger
 from alvoc.core.mutations.analyze import find_mutants as find_mutants_internal
 from alvoc.core.precompute import precompute
 from alvoc.core.utils.convert import aa, nt

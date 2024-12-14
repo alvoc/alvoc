@@ -5,7 +5,7 @@ import pandas as pd
 from ortools.linear_solver import pywraplp
 from sklearn.linear_model import LinearRegression
 
-from alvoc.core import logging
+from alvoc.core.utils import logging
 from alvoc.core.lineages.prepare import parse_lineages
 from alvoc.core.lineages.visualize import (
     plot_lineages,
