@@ -10,7 +10,8 @@ from alvoc.core.lineages import find_lineages as fl
 from alvoc.core.amplicons import Amplicons
 
 cli = typer.Typer(
-    help="Identify frequencies of concerning mutations from aligned reads"
+    no_args_is_help=True,
+    help="Identify frequencies of concerning mutations from aligned reads",
 )
 
 
@@ -28,9 +29,14 @@ outdir: Path = typer.Option(
     ".", help="Output directory for results and intermediate data"
 )
 
+convert_cli = typer.Typer(
+    no_args_is_help=True, help="Tools to convert mutations"
+)
+cli.add_typer(convert_cli, name="convert")
 
-@cli.command()
-def convert_amino_acid(
+
+@convert_cli.command("aa")
+def convert_aa(
     virus=virus,
     mut: str = typer.Argument(
         ..., help="Amino acid mutation in the format 'GENE:aaPOSITIONaaNEW'"
@@ -44,8 +50,8 @@ def convert_amino_acid(
     return aa(mut, genes, seq)
 
 
-@cli.command()
-def convert_nucleotide(
+@convert_cli.command("nt")
+def convert_nt(
     virus=virus,
     mut: str = typer.Option(
         ..., help="Nucleotide mutation in the format 'BASENPOSBASE'"
@@ -61,18 +67,16 @@ def convert_nucleotide(
 
 @cli.command()
 def find_mutants(
-    virus = virus,
+    virus=virus,
     samples_path: Path = typer.Argument(
         ..., help="Path to the file listing samples or a single BAM file."
     ),
     mut_lin_path: Path = typer.Argument(
         ..., help="Path to the json file containing mutation lineages."
     ),
-    mutations_path: Path = typer.Argument(
-        ...,  help="Path to mutations"
-    ),
+    mutations_path: Path = typer.Argument(..., help="Path to mutations"),
     min_depth: int = typer.Option(40, "--min-depth", "-d", help="Minimum depth"),
-    outdir = outdir
+    outdir=outdir,
 ):
     """
     Find mutations in sequencing data, either from BAM files or a sample list.
@@ -88,7 +92,7 @@ def find_mutants(
 
 @cli.command()
 def find_lineages(
-    virus = virus,
+    virus=virus,
     samples_path: Path = typer.Argument(
         ..., help="Path to the file listing samples or a single BAM file."
     ),
@@ -108,7 +112,7 @@ def find_lineages(
     ),
     unique: bool = typer.Option(False, "--unique", "-u", help="Unique"),
     l2: bool = typer.Option(False, "--l2", "-l2", help="Level 2"),
-    outdir = outdir
+    outdir=outdir,
 ):
     """Find lineages in samples"""
     genes, seq, out = precompute(virus, outdir)
@@ -130,14 +134,14 @@ def find_lineages(
 
 @cli.command()
 def amplicon_coverage(
-    virus = virus,
+    virus=virus,
     samples_path: str = typer.Argument(
         ..., help="Path to the file listing samples or a single BAM file."
     ),
     inserts_path: str = typer.Argument(
         ..., help="Path to the CSV file detailing the regions (amplicons) to evaluate."
     ),
-    outdir = outdir
+    outdir=outdir,
 ):
     """Get amplicon coverage"""
     _, seq, out = precompute(virus, outdir)
@@ -151,14 +155,14 @@ def amplicon_coverage(
 
 @cli.command()
 def gc_depth(
-    virus = virus,
+    virus=virus,
     samples_path: str = typer.Argument(
         ..., help="Path to the file listing samples or a single BAM file."
     ),
     inserts_path: str = typer.Argument(
         ..., help="Path to the CSV file detailing the regions (amplicons) to evaluate."
     ),
-    outdir = outdir
+    outdir=outdir,
 ):
     """Get GC depth"""
     _, seq, out = precompute(virus, outdir)
