@@ -1,11 +1,18 @@
-def parse_lineages(lineage_data : dict):
+import json
+from pathlib import Path
+
+def parse_lineages(input_file: Path):
     """
     Convert lineage-centric JSON format to mutation-centric format with 0s for absent mutations.
 
     Args:
-        lineage_data (dict): Original lineage data format
+        input_file (Path): Path to the lineage-centric JSON file.
         output_file (Path): Path to save the mutation-centric JSON file.
     """
+    # Load lineage-centric JSON
+    with open(input_file, "r") as file:
+        lineage_data = json.load(file)
+
     # Gather all unique mutations and lineages
     all_mutations = set()
     all_lineages = lineage_data.keys()

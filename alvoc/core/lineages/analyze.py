@@ -21,7 +21,7 @@ logger = logging.get_logger()
 
 def find_lineages(
     file_path: Path,
-    mut_lins: dict,
+    mut_lin_path: Path,
     genes: dict,
     seq: str,
     outdir: Path,
@@ -57,7 +57,7 @@ def find_lineages(
     sample_names = []
 
     # Convert lineage data to mutation-centric format
-    new_mut_lins = parse_lineages(mut_lins)
+    new_mut_lins = parse_lineages(mut_lin_path)
 
     # Load lineages if a path is provided
     lineages = []
@@ -66,7 +66,7 @@ def find_lineages(
             lineages = f.read().splitlines()
 
     if ".bam" in file_path.suffix:
-        result = find_lineages_in_bam(
+        result = quantify_lineages(
             bam_path=file_path,
             mut_lins=new_mut_lins,
             genes=genes,
@@ -94,7 +94,7 @@ def find_lineages(
             for bam_path, sample_label in samples:
                 if bam_path.endswith(".bam"):
                     path = Path(bam_path)
-                    sr = find_lineages_in_bam(
+                    sr = quantify_lineages(
                         bam_path=path,
                         mut_lins=new_mut_lins,
                         genes=genes,
@@ -134,7 +134,7 @@ def compute_lineage_df(sample_results, sample_names):
     return df
 
 
-def find_lineages_in_bam(
+def quantify_lineages(
     bam_path: Path,
     mut_lins: dict,
     genes: dict,
@@ -164,9 +164,8 @@ def find_lineages_in_bam(
     Returns:
         Sample results, optionally with additional data structures.
     """
-
+    logger.info("Identifying target lineages")
     aa_mutations = [m for m in mut_lins.keys() if m not in black_list]
-
     if unique:
         aa_mutations = [
             mut
@@ -174,24 +173,32 @@ def find_lineages_in_bam(
             if sum(mut_lins[mut][lin] for lin in lineages) == 1
         ]
 
+    logger.info("Converting to nucleotides")
     mutations = parse_mutations(aa_mutations, genes, seq)
+    
+    logger.info("Finding mutants")
     mut_results = find_mutants_in_bam(
         bam_path=bam_path, mutations=mutations, genes=genes, seq=seq
     )
 
+    logger.info("Filtering out mutations below min_depth")
     covered_muts = [m for m in mutations if sum(mut_results[m]) >= min_depth]
     if not covered_muts:
         logger.info("No coverage")
         return None
-
-    # Filter lineages based on coverage and selection criteria
+    
     covered_lineages = {
         lin
         for m in covered_muts
         for lin in mut_lins[m]
         if mut_results[m][0] > 0 and mut_lins[m][lin] > 0.5
     }
-    covered_lineages = [lin for lin in lineages if lin in covered_lineages]
+
+    if lineages:
+        covered_lineages = [lin for lin in lineages if lin in covered_lineages]
+    else:
+        covered_lineages = list(covered_lineages)
+
     Y = np.array([mut_results[m][0] / sum(mut_results[m]) for m in covered_muts])
     lmps = [[round(mut_lins[m][lin]) for m in covered_muts] for lin in covered_lineages]
 

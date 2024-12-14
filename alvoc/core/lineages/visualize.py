@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from numpy import ndarray
+import logging
+logging.getLogger('matplotlib.font_manager').setLevel(logging.WARNING)
 
 
 def plot_lineages(sample_results, sample_names, outdir, all_lins=False):
@@ -59,7 +61,6 @@ def plot_lineages(sample_results, sample_names, outdir, all_lins=False):
     plt.ylabel("SARS-CoV-2 Lineage")
     plt.subplots_adjust(bottom=0.3, left=0.6)
     plt.savefig(outdir / "lineages.png", dpi=300)
-    plt.show()
 
 
 def plot_lineages_timeseries(
@@ -103,7 +104,6 @@ def plot_lineages_timeseries(
         if c == ncols - 1 or i == len(loc_set) - 1:
             axes[r, c].legend(loc="upper left")
 
-    plt.show()
     plt.savefig(outdir / "lineages_timeseries.png", dpi=300)
 
 
@@ -139,7 +139,6 @@ def plot_lineage_predictions(
     df.plot.bar(stacked=True, rot=0)
     plt.tight_layout()
     plt.savefig(outdir / "lineage_predictions.png", dpi=300)
-    plt.show()
 
 
 def plot_lineage_pie(sample_results: dict, outdir: Path):
@@ -158,4 +157,3 @@ def plot_lineage_pie(sample_results: dict, outdir: Path):
     df = df[df["Fraction"] > 0]  # Filter zero fractions
     df.plot.pie(y="Fraction", legend=False, autopct="%1.1f%%", ylabel="")
     plt.savefig(outdir / "lineage_pie.png", dpi=300)
-    plt.show()

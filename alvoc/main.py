@@ -99,7 +99,7 @@ def find_lineages(
         None, "--lineages-path", "-l", help="Path to lineages"
     ),
     black_list: list[str] = typer.Option(
-        None, "--black-list", "-b", help="List of lineages to black list"
+        [], "--black-list", "-b", help="List of lineages to black list"
     ),
     ts: bool = typer.Option(False, "--ts", "-t", help="Time series"),
     min_depth: int = typer.Option(40, "--min-depth", "-d", help="Minimum depth"),
@@ -112,12 +112,9 @@ def find_lineages(
 ):
     """Find lineages in samples"""
     genes, seq, out = precompute(virus, outdir)
-    mut_lins = {}
-    with mut_lin_path.open("r") as file:
-        mut_lins = json.load(file)
     fl(
         file_path=samples_path,
-        mut_lins=mut_lins,
+        mut_lin_path=mut_lin_path,
         genes=genes,
         seq=seq,
         outdir=out,
