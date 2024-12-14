@@ -9,8 +9,8 @@ from alvoc.core.utils.parse import mut_idx, parse_mutation, snv_name
 
 
 def find_mutants(
-    file_path: str,
-    mutations_path: str,
+    file_path: Path,
+    mutations_path: Path,
     min_depth: int,
     mut_lins: dict,
     genes: dict,
@@ -36,34 +36,35 @@ def find_mutants(
         return mut_idx(mut, genes, seq)
 
     # Determine if mutations_path is a known lineage or a file with mutations
-    if mutations_path in mut_lins:
-        print("Searcing for {} mutations".format(mutations_path))
+    if mutations_path.name in mut_lins:
+        print(f"Searching for {mutations_path.name} mutations")
         mutations = [
             mut
             for mut in mut_lins
-            if mut_lins[mut][mutations_path] > 0 and mut_idx(mut, genes, seq) != -1
+            if mut_lins[mut][mutations_path.name] > 0 and mut_idx(mut, genes, seq) != -1
         ]
         mutations.sort(key=mut_idx_adapter)
     else:
-        with open(mutations_path, "r") as file:
+        with mutations_path.open("r") as file:
             mutations = [mut.strip() for mut in file.read().split("\n") if mut.strip()]
 
     # Handle BAM files or sample lists
-    if file_path.endswith(".bam"):
+    if file_path.suffix == ".bam":
         sample_results.append(find_mutants_in_bam(file_path, mutations, genes, seq))
         sample_names.append("")
     else:
-        with open(file_path, "r") as file:
+        with file_path.open("r") as file:
             samples = [line.split("\t") for line in file.read().split("\n") if line]
         for sample in samples:
-            if sample[0].endswith(".bam"):
+            sample_path = Path(sample[0])
+            if sample_path.suffix == ".bam":
                 sample_results.append(
-                    find_mutants_in_bam(sample[0], mutations, genes, seq)
+                    find_mutants_in_bam(sample_path, mutations, genes, seq)
                 )
                 sample_names.append(sample[1])
                 print_mut_results(sample_results[-1], min_depth)
 
-    mutants_name = mutations_path.rsplit(".", 1)[0]
+    mutants_name = mutations_path.stem
     mutation_df = compute_mutation_df(sample_results, sample_names, min_depth=10)
     mutation_df.to_csv(outdir / "mutations.csv", index=False)
 
@@ -84,11 +85,11 @@ def compute_mutation_df(sample_results, sample_names, min_depth):
     return pd.DataFrame(data)
 
 
-def find_mutants_in_bam(bam_path, mutations, genes, seq):
+def find_mutants_in_bam(bam_path: Path, mutations, genes, seq):
     """Identify and quantify mutations from a BAM file.
 
     Args:
-        bam_path (str): Path to the BAM file.
+        bam_path (Path): Path to the BAM file.
         mutations (list): A list of mutations to look for in the BAM file.
 
     Returns:
@@ -97,7 +98,7 @@ def find_mutants_in_bam(bam_path, mutations, genes, seq):
     """
     mut_results = {}
 
-    with pysam.Samfile(bam_path, "rb") as samfile:
+    with pysam.Samfile(str(bam_path), "rb") as samfile:
         parsed_muts = {mut: parse_mutation(mut, genes, seq) for mut in mutations}
         mut_results = {
             mut: {snv_name(m): [0, 0] for m in parsed_muts[mut]} for mut in parsed_muts

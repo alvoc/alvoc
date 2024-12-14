@@ -10,7 +10,7 @@ logger = logging.get_logger()
 
 def precompute(
     virus: str ,
-    outdir: str = "",
+    outdir: Path,
     email: str = "example@example.com",
 ) -> tuple[dict[str, tuple[int, int]], str, Path]:
     """

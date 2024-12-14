@@ -6,6 +6,7 @@ from ortools.linear_solver import pywraplp
 from sklearn.linear_model import LinearRegression
 
 from alvoc.core import logging
+from alvoc.core.lineages.prepare import parse_lineages
 from alvoc.core.lineages.visualize import (
     plot_lineages,
     plot_lineages_timeseries,
@@ -55,6 +56,9 @@ def find_lineages(
     sample_results = []
     sample_names = []
 
+    # Convert lineage data to mutation-centric format
+    new_mut_lins = parse_lineages(mut_lins)
+
     # Load lineages if a path is provided
     lineages = []
     if lineages_path:
@@ -64,7 +68,7 @@ def find_lineages(
     if ".bam" in file_path.suffix:
         result = find_lineages_in_bam(
             bam_path=file_path,
-            mut_lins=mut_lins,
+            mut_lins=new_mut_lins,
             genes=genes,
             seq=seq,
             black_list=black_list,
@@ -92,7 +96,7 @@ def find_lineages(
                     path = Path(bam_path)
                     sr = find_lineages_in_bam(
                         bam_path=path,
-                        mut_lins=mut_lins,
+                        mut_lins=new_mut_lins,
                         genes=genes,
                         seq=seq,
                         black_list=black_list,
@@ -162,9 +166,6 @@ def find_lineages_in_bam(
     """
 
     aa_mutations = [m for m in mut_lins.keys() if m not in black_list]
-
-    if not lineages:
-        raise ValueError("Lineages must be provided for analysis.")
 
     if unique:
         aa_mutations = [

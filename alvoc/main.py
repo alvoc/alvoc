@@ -6,7 +6,7 @@ from alvoc.core.logging import init_logger
 from alvoc.core.mutations.analyze import find_mutants as find_mutants_internal
 from alvoc.core.precompute import precompute
 from alvoc.core.utils.convert import aa, nt
-from alvoc.core.lineages import find_lineages
+from alvoc.core.lineages import find_lineages as fl
 from alvoc.core.amplicons import Amplicons
 
 cli = typer.Typer(
@@ -24,7 +24,7 @@ def callback():
 virus: str = typer.Argument(
     ..., help="Taxonomic ID of the virus, or path to the GenBank file"
 )
-outdir: str = typer.Option(
+outdir: Path = typer.Option(
     ".", help="Output directory for results and intermediate data"
 )
 
@@ -62,13 +62,13 @@ def convert_nucleotide(
 @cli.command()
 def find_mutants(
     virus = virus,
-    samples_path: str = typer.Argument(
+    samples_path: Path = typer.Argument(
         ..., help="Path to the file listing samples or a single BAM file."
     ),
-    mut_lin_path: str = typer.Argument(
+    mut_lin_path: Path = typer.Argument(
         ..., help="Path to the json file containing mutation lineages."
     ),
-    mutations_path: str = typer.Argument(
+    mutations_path: Path = typer.Argument(
         ...,  help="Path to mutations"
     ),
     min_depth: int = typer.Option(40, "--min-depth", "-d", help="Minimum depth"),
@@ -87,15 +87,15 @@ def find_mutants(
 
 
 @cli.command()
-def find_lineages_command(
+def find_lineages(
     virus = virus,
-    samples_path: str = typer.Argument(
+    samples_path: Path = typer.Argument(
         ..., help="Path to the file listing samples or a single BAM file."
     ),
-    mut_lin_path: str = typer.Argument(
+    mut_lin_path: Path = typer.Argument(
         ..., help="Path to the json file containing mutation lineages."
     ),
-    lineages_path: str = typer.Option(
+    lineages_path: Path = typer.Option(
         None, "--lineages-path", "-l", help="Path to lineages"
     ),
     black_list: list[str] = typer.Option(
@@ -112,19 +112,17 @@ def find_lineages_command(
 ):
     """Find lineages in samples"""
     genes, seq, out = precompute(virus, outdir)
-    file_path = Path(samples_path)
-    lineages_file = Path(lineages_path)
     mut_lins = {}
-    with open(mut_lin_path, "r") as file:
+    with mut_lin_path.open("r") as file:
         mut_lins = json.load(file)
-    find_lineages(
-        file_path=file_path,
+    fl(
+        file_path=samples_path,
         mut_lins=mut_lins,
         genes=genes,
         seq=seq,
         outdir=out,
         black_list=black_list,
-        lineages_path=lineages_file,
+        lineages_path=lineages_path,
         ts=ts,
         min_depth=min_depth,
         show_stacked=show_stacked,
