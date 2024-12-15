@@ -54,7 +54,8 @@ def callback(
         is_eager=True,
     ),
 ):
-    init_logger()
+    # Set default logging to INFO
+    init_logger(20) 
     pass
 
 
