@@ -11,6 +11,7 @@ from alvoc.core.utils.logging import init_logger
 
 from alvoc.cli.amplicons import amplicons_cli
 from alvoc.cli.convert import convert_cli
+from importlib.metadata import version as get_version
 
 cli = typer.Typer(
     no_args_is_help=True,
@@ -20,9 +21,16 @@ cli = typer.Typer(
 cli.add_typer(amplicons_cli, name="amplicons")
 cli.add_typer(convert_cli, name="convert")
 
+def version_callback(value: bool):
+    if value:
+        typer.echo(f"Alvoc: {get_version("alvoc")}")
+        raise typer.Exit()
+
 
 @cli.callback()
-def callback():
+def callback(
+    version: bool = typer.Option(None, "--version", callback=version_callback, help="Current version of Alvoc", is_eager=True),
+):
     init_logger()
     pass
 
