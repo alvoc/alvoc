@@ -81,7 +81,6 @@ async def make_constellations(input_url, outdir, base_url):
         await file.write(json.dumps(all_lineage_data, indent=4))
 
 
-
 # Run the asynchronous function
 async def main():
     outdir = Path("constellations")

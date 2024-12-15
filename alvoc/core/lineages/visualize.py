@@ -8,7 +8,8 @@ import pandas as pd
 import seaborn as sns
 from numpy import ndarray
 import logging
-logging.getLogger('matplotlib.font_manager').setLevel(logging.WARNING)
+
+logging.getLogger("matplotlib.font_manager").setLevel(logging.WARNING)
 
 
 def plot_lineages(sample_results, sample_names, outdir, all_lins=False):

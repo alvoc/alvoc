@@ -9,7 +9,7 @@ logger = logging.get_logger()
 
 
 def precompute(
-    virus: str ,
+    virus: str,
     outdir: Path,
     email: str = "example@example.com",
 ) -> tuple[dict[str, tuple[int, int]], str, Path]:
@@ -25,7 +25,7 @@ def precompute(
     Returns:
         A tuple with gene coordinates (dictionary) and genome sequence (string).
 
-    """ 
+    """
     outdir_path = Path(outdir)
     if not outdir_path.is_dir():
         logger.info(f"Creating directory at {outdir_path}")
@@ -41,7 +41,7 @@ def precompute(
             return process_reference(reference_file, outdir_path)
         else:
             logger.error("No file could be processed.")
-            raise ValueError("No file could be processed.") 
+            raise ValueError("No file could be processed.")
 
 
 def process_reference(

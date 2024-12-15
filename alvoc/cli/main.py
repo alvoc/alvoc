@@ -20,18 +20,23 @@ cli = typer.Typer(
 
 # Inject spinner into all commands
 original_command = cli.command
+
+
 def command_with_spinner(*args, **kwargs):
     def decorator(func):
         # Apply the original command decorator first
         decorated_command = original_command(*args, **kwargs)
         # Then apply the spinner decorator
         return decorated_command(with_spinner(func))
+
     return decorator
+
 
 cli.command = command_with_spinner
 
 cli.add_typer(amplicons_cli, name="amplicons")
 cli.add_typer(convert_cli, name="convert")
+
 
 def version_callback(value: bool):
     if value:
@@ -41,7 +46,13 @@ def version_callback(value: bool):
 
 @cli.callback()
 def callback(
-    version: bool = typer.Option(None, "--version", callback=version_callback, help="Current version of Alvoc", is_eager=True),
+    version: bool = typer.Option(
+        None,
+        "--version",
+        callback=version_callback,
+        help="Current version of Alvoc",
+        is_eager=True,
+    ),
 ):
     init_logger()
     pass

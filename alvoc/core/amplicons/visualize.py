@@ -55,7 +55,7 @@ def plot_depths_gc(
     sample_results: list[dict[str, str]],
     sample_names: list[str],
     inserts: list[list],
-    outdir: Path
+    outdir: Path,
 ):
     """
     Plots the relationship between GC content and log depth for each sample using regression plots,

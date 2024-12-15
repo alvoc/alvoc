@@ -5,9 +5,8 @@ from alvoc.cli.common import virus, outdir
 from alvoc.core.utils.precompute import precompute
 from alvoc.core.amplicons import Amplicons
 
-amplicons_cli = typer.Typer(
-    no_args_is_help=True, help="Tools to analyze amplicons"
-)
+amplicons_cli = typer.Typer(no_args_is_help=True, help="Tools to analyze amplicons")
+
 
 @amplicons_cli.command()
 def coverage(
@@ -49,4 +48,3 @@ def gc_depth(
         sequence=seq,
         outdir=out,
     ).gc_depth()
-

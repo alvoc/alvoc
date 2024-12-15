@@ -175,7 +175,7 @@ def quantify_lineages(
 
     logger.info("Converting to nucleotides")
     mutations = parse_mutations(aa_mutations, genes, seq)
-    
+
     logger.info("Finding mutants")
     mut_results = find_mutants_in_bam(
         bam_path=bam_path, mutations=mutations, genes=genes, seq=seq
@@ -186,7 +186,7 @@ def quantify_lineages(
     if not covered_muts:
         logger.info("No coverage")
         return None
-    
+
     covered_lineages = {
         lin
         for m in covered_muts

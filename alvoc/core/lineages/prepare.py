@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+
 def parse_lineages(input_file: Path):
     """
     Convert lineage-centric JSON format to mutation-centric format with 0s for absent mutations.

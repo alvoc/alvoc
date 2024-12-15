@@ -3,9 +3,7 @@ from alvoc.cli.common import virus, outdir
 from alvoc.core.utils.precompute import precompute
 from alvoc.core.utils.convert import aa, nt
 
-convert_cli = typer.Typer(
-    no_args_is_help=True, help="Tools to convert mutations"
-)
+convert_cli = typer.Typer(no_args_is_help=True, help="Tools to convert mutations")
 
 
 @convert_cli.command("aa")

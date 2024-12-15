@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import asyncio
 
+
 async def process_phylogenetic_tree(tree, output_file: Path):
     """
     Process the phylogenetic tree and generate a single JSON file for all clades.
@@ -19,6 +20,7 @@ async def process_phylogenetic_tree(tree, output_file: Path):
     await write_json_file(aggregated_data, output_file)
     print("Processing completed.")
 
+
 def traverse_tree(clade, clades):
     """
     Traverse the phylogenetic tree to collect unique clade names.
@@ -28,6 +30,7 @@ def traverse_tree(clade, clades):
 
     for child in clade.get("children", []):
         traverse_tree(child, clades)
+
 
 def extract_all_mutations(clade, target_clade=None):
     """
@@ -42,7 +45,11 @@ def extract_all_mutations(clade, target_clade=None):
             mutations.update(branch_mutations["nuc"])
 
     # Return if we hit the target clade
-    if target_clade and "node_attrs" in clade and "clade_membership" in clade["node_attrs"]:
+    if (
+        target_clade
+        and "node_attrs" in clade
+        and "clade_membership" in clade["node_attrs"]
+    ):
         clade_membership = clade["node_attrs"]["clade_membership"]["value"]
         if clade_membership == target_clade:
             return list(mutations)
@@ -53,6 +60,7 @@ def extract_all_mutations(clade, target_clade=None):
         mutations.update(child_mutations)
 
     return list(mutations)
+
 
 def create_clade_entry(clade_name, clade_mutations):
     """
@@ -71,7 +79,8 @@ def create_clade_entry(clade_name, clade_mutations):
         },
     }
 
-    return { clade_name : entry}
+    return {clade_name: entry}
+
 
 async def write_json_file(aggregated_data, output_file: Path):
     """
@@ -80,6 +89,7 @@ async def write_json_file(aggregated_data, output_file: Path):
     async with aiofiles.open(output_file, "w") as file:
         await file.write(json.dumps(aggregated_data, indent=4))
     print(f"Generated JSON file: {output_file}")
+
 
 async def main(tree_file: str, output_file: Path):
     """
@@ -103,8 +113,12 @@ async def main(tree_file: str, output_file: Path):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Process Nextstrain phylogenetic tree for clade mutations.")
-    parser.add_argument("tree_file", help="Path to the Nextstrain phylogenetic tree JSON file.")
+    parser = argparse.ArgumentParser(
+        description="Process Nextstrain phylogenetic tree for clade mutations."
+    )
+    parser.add_argument(
+        "tree_file", help="Path to the Nextstrain phylogenetic tree JSON file."
+    )
     # parser.add_argument("output_file", help="Path to save the aggregated JSON file.")
     args = parser.parse_args()
 

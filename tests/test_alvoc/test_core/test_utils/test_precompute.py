@@ -12,6 +12,7 @@ from alvoc.core.utils.precompute import (
     process_reference,
 )
 
+
 def test_precompute_with_genbank_file(tmp_path):
     virus = tmp_path / "dummy.gb"
     virus.write_text(">Dummy data")
@@ -29,12 +30,8 @@ def test_precompute_with_tax_id(tmp_path, caplog):
     outdir = tmp_path / "output"
     email = "test@example.com"
 
-    with patch(
-        "alvoc.core.utils.precompute.download_virus_data"
-    ) as mocked_download:
-        with patch(
-            "alvoc.core.utils.precompute.process_reference"
-        ) as mocked_process:
+    with patch("alvoc.core.utils.precompute.download_virus_data") as mocked_download:
+        with patch("alvoc.core.utils.precompute.process_reference") as mocked_process:
             mocked_download.return_value = tmp_path / "downloaded.gb"
             mocked_process.return_value = ({"gene": (1, 100)}, "ACGT", outdir)
             result = precompute(virus="12345", outdir=Path(outdir), email=email)

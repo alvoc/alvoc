@@ -16,11 +16,16 @@ logger = logging.getLogger("alvoc")
 # Initialize Rich console
 console = Console()
 
+
 # Spinner decorator with dynamic text updates and exclusive spinner output
 def with_spinner(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        with console.status("[bold blue]Initializing...[/bold blue]", spinner="dots", spinner_style="blue") as status:
+        with console.status(
+            "[bold blue]Initializing...[/bold blue]",
+            spinner="dots",
+            spinner_style="blue",
+        ) as status:
             # Custom logging handler to update spinner dynamically
             class SpinnerHandler(logging.Handler):
                 def emit(self, record):
@@ -46,4 +51,3 @@ def with_spinner(func):
             return result
 
     return wrapper
-
