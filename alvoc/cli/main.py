@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 from alvoc.core.utils.precompute import precompute
-from alvoc.cli.common import virus, outdir
+from alvoc.cli.common import virus, outdir, with_spinner
 from alvoc.core.mutations.analyze import find_mutants as find_mutants_internal
 
 from alvoc.core.lineages import find_lineages as fl
@@ -17,6 +17,18 @@ cli = typer.Typer(
     no_args_is_help=True,
     help="Identify frequencies of concerning mutations from aligned reads",
 )
+
+# Inject spinner into all commands
+original_command = cli.command
+def command_with_spinner(*args, **kwargs):
+    def decorator(func):
+        # Apply the original command decorator first
+        decorated_command = original_command(*args, **kwargs)
+        # Then apply the spinner decorator
+        return decorated_command(with_spinner(func))
+    return decorator
+
+cli.command = command_with_spinner
 
 cli.add_typer(amplicons_cli, name="amplicons")
 cli.add_typer(convert_cli, name="convert")
