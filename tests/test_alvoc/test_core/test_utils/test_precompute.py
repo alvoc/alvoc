@@ -17,7 +17,7 @@ def test_precompute_with_genbank_file(tmp_path):
     virus.write_text(">Dummy data")
     outdir = tmp_path / "output"
 
-    with patch("alvoc.core.precompute.precompute.process_reference") as mocked_process:
+    with patch("alvoc.core.utils.precompute.process_reference") as mocked_process:
         mocked_process.return_value = ({"gene": (1, 100)}, "ACGT", outdir)
         result = precompute(virus=str(virus), outdir=Path(outdir))
         assert result[0] == {"gene": (1, 100)}
@@ -30,10 +30,10 @@ def test_precompute_with_tax_id(tmp_path, caplog):
     email = "test@example.com"
 
     with patch(
-        "alvoc.core.precompute.precompute.download_virus_data"
+        "alvoc.core.utils.precompute.download_virus_data"
     ) as mocked_download:
         with patch(
-            "alvoc.core.precompute.precompute.process_reference"
+            "alvoc.core.utils.precompute.process_reference"
         ) as mocked_process:
             mocked_download.return_value = tmp_path / "downloaded.gb"
             mocked_process.return_value = ({"gene": (1, 100)}, "ACGT", outdir)
@@ -51,10 +51,10 @@ def test_process_reference(tmp_path, caplog):
 
     organism = SeqRecord(Seq("ACGT"), id="12345", features=[])
     with patch(
-        "alvoc.core.precompute.precompute.SeqIO.parse", return_value=iter([organism])
+        "alvoc.core.utils.precompute.SeqIO.parse", return_value=iter([organism])
     ):
         with patch(
-            "alvoc.core.precompute.precompute.extract_gene_info",
+            "alvoc.core.utils.precompute.extract_gene_info",
             return_value={"gene": (1, 100)},
         ):
             result = process_reference(reference_file, outdir)
@@ -87,7 +87,7 @@ def test_extract_gene_info(features, expected):
 
 
 def test_download_virus_data_errors(caplog):
-    with patch("alvoc.core.precompute.precompute.Entrez.efetch") as mocked_efetch:
+    with patch("alvoc.core.utils.precompute.Entrez.efetch") as mocked_efetch:
         mocked_efetch.side_effect = Exception("Network error")
         with pytest.raises(Exception):
             download_virus_data("12345", Path("/fakepath"), "test@example.com")
