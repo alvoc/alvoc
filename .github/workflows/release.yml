@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 permissions:
   contents: write
@@ -25,10 +22,10 @@ jobs:
         uses: ./.github/workflows/actions/setup-base
         with:
           environment: dev
-          shell: bash
+          uv_version: "0.5.9"
 
       - name: Run tests
-        run: poetry run pytest
+        run: uv run --frozen pytest
 
   bump-version:
     if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'bump:')
@@ -58,81 +55,33 @@ jobs:
           body_path: "body.md"
           tag_name: ${{ steps.cz.outputs.version }}
 
-  # pypi-publish:
-  #   name: Upload release to PyPI
-  #   runs-on: ubuntu-latest
-  #   needs: bump-version
+  pypi-publish:
+    runs-on: ubuntu-latest
+    needs: bump-version
 
-  #   environment:
-  #     name: pypi
-  #     url: https://pypi.org/p/alvoc
-  #   permissions:
-  #     id-token: write 
+    environment:
+      name: pypi
+      url: https://pypi.org/p/alvoc
+      
+    permissions:
+      id-token: write 
 
-  #   steps:
-  #   - name: Checkout repo
-  #     uses: actions/checkout@v4
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
   
-  #   - name: Base Setup
-  #     uses: ./.github/workflows/actions/setup-base
-  #     with:
-  #       environment: prod
-  #       shell: bash
+    - name: Base Setup
+      uses: ./.github/workflows/actions/setup-base
+      with:
+        environment: prod
+        shell: bash
 
-  #   - name: Build the package
-  #     shell: bash
-  #     run: |
-  #       poetry build
+    - name: Build the package
+      shell: bash
+      run: |
+        uv build
 
-  #   - name: Publish package distributions to PyPI
-  #     uses: pypa/gh-action-pypi-publish@release/v1
-
-  # build-executables:
-  #   runs-on: ${{ matrix.os }}
-  #   needs: bump-version
-  #   strategy:
-  #     matrix:
-  #       os: [macos-latest, ubuntu-latest]
-
-  #   outputs:
-  #     version: ${{ needs.bump-version.outputs.version }}
-
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v4
-    
-  #     - name: Base Setup
-  #       uses: ./.github/workflows/actions/setup-base
-  #       with:
-  #         environment: prod
-  #         shell: bash
-
-  #     - name: Get pyinstaller
-  #       run: poetry add pyinstaller
-
-  #     - name: Build executable
-  #       run: poetry run pyinstaller alvoc/cli.py --name alvoc-${{ matrix.os }}-${{ needs.bump-version.outputs.version }} --collect-submodules shellingham
-
-  #     - name: Zip executable
-  #       run: zip -r dist/alvoc-${{ matrix.os }}-${{ needs.bump-version.outputs.version }}.zip dist/
-    
-  #     - name: Archive executable
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: alcov-${{ matrix.os }}-${{ needs.bump-version.outputs.version }}
-  #         path: dist/
-
-  # publish-release:
-  #   needs: build-executables
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Download all artifacts
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         path: dist/
-
-  #     - name: Publish release
-  #       uses: softprops/action-gh-release@v1
-  #       with:
-  #         tag_name: ${{ needs.build-executables.outputs.version }}
-  #         files: dist/*
+    - name: Publish the package
+      shell: bash
+      run: |
+          uv publish
