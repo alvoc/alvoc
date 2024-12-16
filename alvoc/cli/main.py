@@ -134,19 +134,18 @@ def find_mutants(
     )
 
 @cli.command()
-def coordinates(
+def extract_gene_data(
     virus=virus,
     outdir=outdir
 ):
     """
-    Processes a GenBank file to extract gene information and sequence, or alternatively pass in a virus taxonomic ID to generate gene coordinates and a genome sequence.
+    Extracts gene coordinates and the genome sequence from a GenBank file or generates them using a virus taxonomic ID.
     """
     out = create_dir(outdir=outdir)
     precompute(
         virus=virus,
         outdir=out
     )
-
 
 
 if __name__ == "__main__":
