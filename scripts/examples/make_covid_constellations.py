@@ -76,7 +76,7 @@ async def make_constellations(input_url, outdir, base_url):
                 all_lineage_data[result["lineage"]] = result
 
     # Writing all data into a single JSON file
-    output_file = outdir / "constellations_data.json"
+    output_file = outdir / "covid_constellations.json"
     async with aiofiles.open(output_file, "w") as file:
         await file.write(json.dumps(all_lineage_data, indent=4))
 

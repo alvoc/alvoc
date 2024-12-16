@@ -1,3 +1,5 @@
-from .main import cli
+# alvoc/__main__.py
+from alvoc.cli import cli
 
-cli(prog_name="alvoc")
+if __name__ == "__main__":
+    cli(prog_name="alvoc")

@@ -1,1 +1,3 @@
-from alvoc.core.amplicons.analyze import Amplicons
+__all__ = ["calculate_amplicon_metrics"]
+
+from alvoc.core.amplicons.main import calculate_amplicon_metrics

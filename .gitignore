@@ -5,9 +5,12 @@ build/
 dist/
 wheels/
 *.egg-info
+.pytest_cache 
 
 # Virtual environments
 .venv
 
 # test data
 data
+
+.ruff_cache

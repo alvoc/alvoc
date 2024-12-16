@@ -1,65 +1,86 @@
 from datetime import date
 from math import ceil
 from pathlib import Path
+from typing import Union
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
 from numpy import ndarray
+import logging
+
+logging.getLogger("matplotlib.font_manager").setLevel(logging.WARNING)
 
 
-def plot_lineages(sample_results, sample_names, outdir, all_lins=False):
-    """Plot heatmap of lineage distributions per sample.
+def plot_lineages(
+    data: pd.DataFrame,
+    outdir: Union[str, Path],
+    all_lins: bool = False,
+    xlabel: str = "Samples",
+    ylabel: str = "Lineage",
+) -> None:
+    """
+    Plot a heatmap of lineage distributions per sample.
 
     Args:
-        sample_results (list): List of dictionaries with sample results.
-        sample_names (list): List of sample names.
-        outdir : Output directory for plot.
-        all_lins (bool): Flag to show all lineages or only significant ones.
+        data: DataFrame with columns ['sample', 'lineage', 'abundance'].
+        outdir: Output directory for the plot.
+        all_lins: Flag to show all lineages or only significant ones.
     """
     sns.set_theme()
 
-    names = set()
-    for sr in sample_results:
-        for key in sr:
-            if sr[key] > 0.01 or all_lins:
-                names.add(key)
-    names = sorted(names)
-    lin_fractions = np.array(
-        [[sr.get(lin, 0) * 100 for lin in names] for sr in sample_results]
-    ).T
+    # Filter lineages based on the `all_lins` flag
+    if not all_lins:
+        data = data[data["abundance"] > 0.01]
 
+    # Pivot the data for heatmap compatibility
+    pivot_table = (
+        data.pivot(index="lineage", columns="sample", values="abundance").fillna(0)
+        * 100
+    )
+    sample_names = pivot_table.columns.tolist()
+    lineage_names = pivot_table.index.tolist()
+    lin_fractions = pivot_table.values
+
+    # Calculate figure dimensions dynamically
     fontsize_pt = plt.rcParams["ytick.labelsize"]
     dpi = 72.27
-    matrix_height_pt = fontsize_pt * (len(lin_fractions) + 30)
+    matrix_height_pt = fontsize_pt * (len(lineage_names) + 30)
     matrix_height_in = matrix_height_pt / dpi
     top_margin = 0.10
     bottom_margin = 0.20
     figure_height = matrix_height_in / (1 - top_margin - bottom_margin)
     figure_width = len(sample_names) * 2 + 5
 
+    # Create the heatmap
     fig, ax = plt.subplots(
         figsize=(figure_width, figure_height),
         gridspec_kw={"top": 1 - top_margin, "bottom": bottom_margin},
     )
-    ax = sns.heatmap(
+    _ = sns.heatmap(
         lin_fractions,
         annot=True,
         cmap=sns.cm.rocket_r,
         xticklabels=sample_names,
-        yticklabels=names,
+        yticklabels=lineage_names,
         vmin=0,
         vmax=100,
         cbar_kws={"format": "%.0f%%"},
         fmt=".1f",
     )
-    plt.xlabel("Frequency in sample")
+
+    # Configure labels and ticks
+    plt.xlabel(xlabel)
     plt.xticks(rotation=30, ha="right", rotation_mode="anchor")
-    plt.ylabel("SARS-CoV-2 Lineage")
+    plt.ylabel(ylabel)
     plt.subplots_adjust(bottom=0.3, left=0.6)
-    plt.savefig(outdir / "lineages.png", dpi=300)
-    plt.show()
+
+    # Save the plot
+    outdir = Path(outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+    output_file = outdir / "lineage_abundance_heatmap.png"
+    plt.savefig(output_file, dpi=300)
+    plt.close()
 
 
 def plot_lineages_timeseries(
@@ -103,7 +124,6 @@ def plot_lineages_timeseries(
         if c == ncols - 1 or i == len(loc_set) - 1:
             axes[r, c].legend(loc="upper left")
 
-    plt.show()
     plt.savefig(outdir / "lineages_timeseries.png", dpi=300)
 
 
@@ -139,7 +159,6 @@ def plot_lineage_predictions(
     df.plot.bar(stacked=True, rot=0)
     plt.tight_layout()
     plt.savefig(outdir / "lineage_predictions.png", dpi=300)
-    plt.show()
 
 
 def plot_lineage_pie(sample_results: dict, outdir: Path):
@@ -158,4 +177,3 @@ def plot_lineage_pie(sample_results: dict, outdir: Path):
     df = df[df["Fraction"] > 0]  # Filter zero fractions
     df.plot.pie(y="Fraction", legend=False, autopct="%1.1f%%", ylabel="")
     plt.savefig(outdir / "lineage_pie.png", dpi=300)
-    plt.show()

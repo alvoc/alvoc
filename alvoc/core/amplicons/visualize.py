@@ -8,87 +8,80 @@ from scipy import stats
 sns.set_theme()
 
 
-def plot_depths(
-    sample_results: list[dict[str, str]],
-    sample_names: list[str],
-    inserts: list[list],
-    outdir: Path,
-):
+def plot_depths(results_df: pd.DataFrame, inserts: list[list], outdir: Path):
     """
     Plots the logarithmic depth of sequencing results across samples and pools using a bar plot.
 
     Args:
-        sample_results: A list of dictionaries where keys are amplicon numbers and values are depths.
-        sample_names: A list of names corresponding to the samples in `sample_results`.
-        inserts: A list of data used for generating additional sample metadata.
+        results_df: Pandas DataFrame containing `sample`, `amplicon_id`, and `depth` columns.
+        inserts: A list of data used for generating additional metadata about the amplicons.
         outdir: Output directory for plot.
-
     """
-    samples = sum([len(inserts) * [name] for name in sample_names], [])
-    amplicons = sum([list(amplicon.keys()) for amplicon in sample_results], [])
-    pools = ["Pool 1" if True else "Pool 2" for _ in amplicons]
-    depths = sum(
-        [[np.log(max(a, 1)) for a in amplicon.values()] for amplicon in sample_results],
-        [],
+    # Add "Pool" information based on amplicon number (example logic: even = Pool 1, odd = Pool 2)
+    results_df["Pool"] = results_df["amplicon_id"].apply(
+        lambda x: "Pool 1" if int(x.split("_")[-1]) % 2 == 0 else "Pool 2"
     )
-    data = {
-        "Sample": samples,
-        "Amplicon number": amplicons,
-        "Pool": pools,
-        "Log depth": depths,
-    }
-    df = pd.DataFrame(data)
-    grid = sns.FacetGrid(df, row="Sample", hue="Pool", height=1.7, aspect=8)
+    # Add log-transformed depth
+    results_df["Log depth"] = results_df["depth"].apply(lambda x: np.log(max(x, 1)))
+
+    # Create a bar plot of log depth by amplicon number
+    grid = sns.FacetGrid(
+        results_df,
+        row="sample",
+        hue="Pool",
+        height=1.7,
+        aspect=8,
+        sharey=False,
+    )
     grid.map(
         sns.barplot,
-        "Amplicon number",
+        "amplicon_id",
         "Log depth",
-        order=[str(i) for i in range(1, 99)],
+        order=sorted(
+            results_df["amplicon_id"].unique(), key=lambda x: int(x.split("_")[-1])
+        ),
         hue_order=["Pool 1", "Pool 2"],
     )
-    plt.locator_params(axis="x")
+    grid.add_legend()
+    plt.xticks(rotation=90)
     plt.savefig(outdir / "depths.png", dpi=300)
-    plt.show()
 
 
-def plot_depths_gc(
-    sample_results: list[dict[str, str]],
-    sample_names: list[str],
-    inserts: list[list],
-    outdir: Path
-):
+def plot_depths_gc(results_df: pd.DataFrame, outdir: Path):
     """
     Plots the relationship between GC content and log depth for each sample using regression plots,
     and computes the Pearson correlation coefficient.
 
     Args:
-        sample_results: A list of dictionaries where keys are amplicon numbers and values are depths.
-        sample_names: A list of names corresponding to the samples in `sample_results`.
-        inserts: A list of data used for extracting GC content.
+        results_df: Pandas DataFrame containing `sample`, `amplicon_id`, `depth`, and `gc_content` columns.
         outdir: Output directory for plot.
-
     """
-    depths = sample_results[0]
-    samples = sum([98 * [name] for name in sample_names], [])
-    amplicons = sum([list(amplicon.keys()) for amplicon in sample_results], [])
-    gcs = [inserts[int(a) - 1][6] for a in amplicons]
-    pools = ["Pool 1" if int(a) % 2 == 0 else "Pool 2" for a in amplicons]
-    depths = sum(
-        [[np.log(max(a, 1)) for a in amplicon.values()] for amplicon in sample_results],
-        [],
-    )
-    data = {
-        "Sample": samples,
-        "Amplicon number": [int(a) for a in amplicons],
-        "GC content": gcs,
-        "Pool": pools,
-        "Log depth": depths,
-    }
-    df = pd.DataFrame(data)
-    grid = sns.FacetGrid(df, col="Sample")
-    grid.map(sns.regplot, "GC content", "Log depth")
-    statistic, pvalue = stats.pearsonr(gcs, depths)
-    print(f"Pearson correlation statistic: {statistic}")
-    print(f"Pearson p-value (probability that variables are independent): {pvalue}")
+    # Add log-transformed depth to DataFrame
+    results_df["Log depth"] = results_df["depth"].apply(lambda x: np.log(max(x, 1)))
+
+    # Ensure there is enough data for plotting
+    if results_df.empty:
+        raise ValueError(
+            "No data available for plotting. Check the `results_df` DataFrame."
+        )
+
+    # Create regression plots for GC content vs log depth
+    grid = sns.FacetGrid(results_df, col="sample", height=4, aspect=1)
+    grid.map(sns.regplot, "gc_content", "Log depth")
+
+    # Compute Pearson correlation for GC content vs log depth
+    for sample, group in results_df.groupby("sample"):
+        gcs = group["gc_content"]
+        depths = group["Log depth"]
+        if len(gcs) > 1:
+            statistic, pvalue = stats.pearsonr(gcs, depths)
+            print(f"Sample: {sample}")
+            print(f"  Pearson correlation statistic: {statistic:.3f}")
+            print(f"  Pearson p-value: {pvalue:.3g}")
+        else:
+            print(
+                f"Sample: {sample} - Insufficient data to compute Pearson correlation."
+            )
+
+    # Save the plot
     plt.savefig(outdir / "gc_depths.png", dpi=300)
-    plt.show()

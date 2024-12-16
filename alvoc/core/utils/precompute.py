@@ -3,50 +3,44 @@ from pathlib import Path
 
 from Bio import Entrez, SeqIO
 
-from alvoc.core import logging
+from alvoc.core.utils.logging import get_logger
 
-logger = logging.get_logger()
+logger = get_logger()
 
 
 def precompute(
-    virus: str ,
-    outdir: str = "",
+    virus: str,
+    outdir: Path,
     email: str = "example@example.com",
-) -> tuple[dict[str, tuple[int, int]], str, Path]:
+) -> tuple[dict[str, tuple[int, int]], str]:
     """
-    Processes a GenBank file to extract gene information and sequence, or alternatively pass in a virus taxonomic ID
-    to automatically generate the necessary reference data. At least one of 'tax_id' or 'genbank_file' must be provided.
+    Processes a GenBank file to extract gene information and sequence, or alternatively pass in an NCBI query to automatically generate the necessary reference data.
 
     Args:
-        virus : Taxonomic ID of the virus or Path to the GenBank file
+        virus : NCBI query for virus or Path to the GenBank file
         email : Email for accessing Entrez api.
         outdir : Output directory for results and intermediate data. Defaults to the current directory.
 
     Returns:
         A tuple with gene coordinates (dictionary) and genome sequence (string).
 
-    """ 
-    outdir_path = Path(outdir)
-    if not outdir_path.is_dir():
-        logger.info(f"Creating directory at {outdir_path}")
-        outdir_path.mkdir(parents=True, exist_ok=True)
-
+    """
     reference_file = Path(virus)
     if reference_file.exists():
-        return process_reference(reference_file, outdir_path)
+        return process_reference(reference_file, outdir)
     else:
-        file_path = download_virus_data(virus, outdir_path, email)
+        file_path = download_virus_data(virus, outdir, email)
         if file_path:
             reference_file = Path(file_path)
-            return process_reference(reference_file, outdir_path)
+            return process_reference(reference_file, outdir)
         else:
             logger.error("No file could be processed.")
-            raise ValueError("No file could be processed.") 
+            raise ValueError("No file could be processed.")
 
 
 def process_reference(
-    reference_file: Path, outdir_path
-) -> tuple[dict[str, tuple[int, int]], str, Path]:
+    reference_file: Path, outdir_path: Path
+) -> tuple[dict[str, tuple[int, int]], str]:
     """
     Processes a GenBank file to extract gene information and sequence.
 
@@ -77,11 +71,11 @@ def process_reference(
             )
         logger.info("Reference processing complete and data saved")
 
-        return gene_coordinates, genome_sequence, outdir_path
+        return gene_coordinates, genome_sequence
 
     except Exception as e:
         logger.error(f"An error occurred: {e}")
-        return {}, "", Path(".")
+        return {}, ""
 
 
 def extract_gene_info(organism):
@@ -98,20 +92,18 @@ def extract_gene_info(organism):
     return gene_coordinates
 
 
-def download_virus_data(tax_id: str, outdir: Path, email: str):
+def download_virus_data(query: str, outdir: Path, email: str):
     """
     Downloads virus gene data from GenBank based on a given taxonomic ID.
 
     Args:
-        tax_id : Taxonomic ID of the virus.
+        query : Search term for the virus.
         outdir : Path to the output directory.
         email : Email for Entrez API.
     """
     try:
         Entrez.email = email
-        search_handle = Entrez.esearch(
-            db="nucleotide", term=f"txid{tax_id}[Organism:exp]", retmax=1
-        )
+        search_handle = Entrez.esearch(db="nucleotide", term=query, retmax=1)
         search_results = Entrez.read(search_handle)
         search_handle.close()
 
@@ -120,7 +112,7 @@ def download_virus_data(tax_id: str, outdir: Path, email: str):
             or "IdList" not in search_results
             or not search_results["IdList"]
         ):
-            raise Exception(f"No results found for tax ID: {tax_id}")
+            raise Exception(f"No results found for: {query}")
 
         virus_id = search_results["IdList"][0]
         fetch_handle = Entrez.efetch(
@@ -131,7 +123,7 @@ def download_virus_data(tax_id: str, outdir: Path, email: str):
         with open(file_path, "w") as f:
             f.write(fetch_handle.read())
         fetch_handle.close()
-        logger.info(f"Downloaded data for tax ID {tax_id} and saved to {file_path}")
+        logger.info(f"Downloaded data for query and saved to {file_path}")
         return file_path.as_posix()
     except Exception as e:
         logger.error(f"An error occurred while downloading data: {e}")

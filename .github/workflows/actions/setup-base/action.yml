@@ -10,37 +10,29 @@ inputs:
     description: os shell
     required: true
     default: bash
+  uv_version:
+    description: uv version
+    required: true
+    default: "0.5.9"
 
 runs:
   using: composite
   steps:
-    - name: Setup Python
-      uses: actions/setup-python@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
       with:
-        python-version: "3.11"
+        version: ${{inputs.uv_version}}
 
-    - name: Run image
-      uses: abatilo/actions-poetry@v2
+    - name: Setup python
+      uses: actions/setup-python@v5
       with:
-        poetry-version: "1.8"
+        python-version-file: ".python-version"
 
-    - name: Setup a local virtual environment (if no poetry.toml file)
-      shell: ${{inputs.shell}}
-      run: |
-        poetry config virtualenvs.create true --local
-        poetry config virtualenvs.in-project true --local
-
-    - uses: actions/cache@v3
-      name: Define a cache for the virtual environment based on the dependencies lock file
-      with:
-        path: ./.venv
-        key: venv-${{inputs.environment}}-${{ hashFiles('poetry.lock') }}
-
-    - name: Setup dependencies
+    - name: Install dependencies
       shell: ${{inputs.shell}}
       run: |
         if [ "${{ inputs.environment }}" == "dev" ]; then
-          poetry install --with dev --no-root
+          uv sync --frozen --dev 
         else
-          poetry install --without dev --no-root
+          uv sync --frozen --no-dev
         fi
