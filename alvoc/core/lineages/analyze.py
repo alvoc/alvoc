@@ -5,7 +5,7 @@ import pandas as pd
 from ortools.linear_solver import pywraplp
 from sklearn.linear_model import LinearRegression
 
-from alvoc.core.utils import logging
+from alvoc.core.utils import create_dir, logging
 from alvoc.core.lineages.prepare import parse_lineages
 from alvoc.core.lineages.visualize import (
     plot_lineages,
@@ -52,8 +52,11 @@ def find_lineages(
     Returns:
         None: Results are printed or plotted directly.
     """
+    # Create or find directory
+    out = create_dir(outdir)
+
     # Extract the genome sequence and gene coordinates for the target virus
-    genes, seq, out = precompute(virus, outdir)
+    genes, seq = precompute(virus, out)
 
     # Convert lineage data to mutation-centric format
     mut_lins = parse_lineages(constellations)

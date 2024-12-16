@@ -8,7 +8,6 @@ def parse_lineages(input_file: Path):
 
     Args:
         input_file (Path): Path to the lineage-centric JSON file.
-        output_file (Path): Path to save the mutation-centric JSON file.
     """
     # Load lineage-centric JSON
     with open(input_file, "r") as file:
