@@ -3,6 +3,7 @@ from pathlib import Path
 import typer
 from functools import wraps
 from rich.console import Console
+import time
 
 # Common options
 virus: str = typer.Argument(
@@ -11,11 +12,9 @@ virus: str = typer.Argument(
 outdir: Path = typer.Option(
     ".", help="Output directory for results and intermediate data"
 )
-logger = logging.getLogger("alvoc")
 
 # Initialize Rich console
 console = Console()
-
 
 # Spinner decorator with dynamic text updates and exclusive spinner output
 def with_spinner(func):
@@ -32,21 +31,19 @@ def with_spinner(func):
                     log_entry = self.format(record)
                     status.update(f"[bold blue]{log_entry}[/bold blue]")
 
-            # Save existing handlers and temporarily disable them
-            root_logger = logging.getLogger()  # Root logger
-            existing_handlers = root_logger.handlers[:]
-            root_logger.handlers = []  # Clear all existing handlers
-
             # Add spinner handler
+            root_logger = logging.getLogger()
             spinner_handler = SpinnerHandler()
             spinner_handler.setFormatter(logging.Formatter("%(message)s"))
+            spinner_handler.setLevel(logging.INFO)  # Only log INFO and above
             root_logger.addHandler(spinner_handler)
 
             try:
                 result = func(*args, **kwargs)
             finally:
-                # Restore original handlers
-                root_logger.handlers = existing_handlers
+                time.sleep(0.5)  # Ensure spinner is visible
+                status.update("[bold green]Task completed![/bold green]")
+                root_logger.removeHandler(spinner_handler)  # Clean up handler
 
             return result
 

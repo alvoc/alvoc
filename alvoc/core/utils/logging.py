@@ -1,12 +1,12 @@
 import logging
 
 
-def init_logger(level=logging.DEBUG, log_file="app.log"):
+def init_logger(level=logging.DEBUG):
     logging.basicConfig(
         level=level,
         format="%(levelname)s - %(asctime)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=[logging.StreamHandler()],
+        handlers=[],
     )
 
 

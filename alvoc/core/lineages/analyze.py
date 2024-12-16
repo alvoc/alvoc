@@ -90,7 +90,7 @@ def find_lineages(
         )
 
         if result is None:
-            print("No coverage or analysis couldn't be performed.")
+            logger.info("No coverage or analysis couldn't be performed.")
         else:
             sr, X, Y, covered_muts = result
             if show_stacked:
