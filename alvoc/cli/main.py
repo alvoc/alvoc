@@ -92,12 +92,6 @@ def find_lineages(
         "-l2",
         help="Whether to use a secondary method for regression analysis.",
     ),
-    ts: bool = typer.Option(
-        False, "--ts", "-t", help="Whether to create a time-series plot."
-    ),
-    show_stacked: bool = typer.Option(
-        False, "--show-stacked", "-s", help="Whether to show stacked visualizations."
-    ),
     outdir=outdir,
 ):
     """Find lineages in samples"""
@@ -111,8 +105,6 @@ def find_lineages(
         min_depth=min_depth,
         unique=unique,
         l2=l2,
-        ts=ts,
-        show_stacked=show_stacked
     )
 
 

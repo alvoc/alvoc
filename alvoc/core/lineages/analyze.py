@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -30,8 +31,6 @@ def find_lineages(
     min_depth: int = 40,
     unique: bool = False,
     l2: bool = False,
-    show_stacked: bool = False,
-    ts: bool = False,
 ):
     """
     Processes either a single BAM file or a samplesheet to find and analyze lineages based on the given parameters.
@@ -44,13 +43,11 @@ def find_lineages(
         white_list: Path to a TXT file containing lineages to include.
         black_list: Path to a TXT file containing lineages to exclude.
         min_depth: Minimum depth for a mutation to be considered.
-        show_stacked: Whether to show stacked visualizations.
         unique: Whether to consider unique mutations only.
         l2: Whether to use a secondary method for regression analysis.
-        ts: Whether to create a time-series plot.
 
     Returns:
-        None: Results are printed or plotted directly.
+        None: Outputs csv + plots.
     """
     # Create or find directory
     out = create_dir(outdir)
@@ -61,6 +58,63 @@ def find_lineages(
     # Convert lineage data to mutation-centric format
     mut_lins = parse_lineages(constellations)
 
+    results_df = pd.DataFrame()
+
+    if samples.suffix == ".bam":
+        # Process single BAM file
+        process_sample(
+            sample=samples,
+            sample_name=samples.stem,
+            results_df=results_df,
+            mut_lins=mut_lins,
+            genes=genes,
+            seq=seq,
+            white_list=white_list,
+            black_list=black_list,
+            min_depth=min_depth,
+            unique=unique,
+            l2=l2,
+        )
+    else:
+        # Process multiple samples from a CSV file
+        sample_df = pd.read_csv(samples)
+        for _, row in sample_df.iterrows():
+            bam_path = Path(row["bam"])
+            sample_label = row["sample"]
+            if bam_path.suffix == ".bam":
+                results_df = process_sample(
+                    sample=bam_path,
+                    sample_name=sample_label,
+                    results_df=results_df,
+                    mut_lins=mut_lins,
+                    genes=genes,
+                    seq=seq,
+                    white_list=white_list,
+                    black_list=black_list,
+                    min_depth=min_depth,
+                    unique=unique,
+                    l2=l2,
+                )
+
+    # Save results to a CSV file
+    results_df.to_csv(out / "lineages.csv", index=False)
+    # plot_lineages(sample_results, sample_names, out, bool(white_list))
+
+
+def process_sample(
+    sample: Path,
+    sample_name: str,
+    results_df: pd.DataFrame,
+    mut_lins: dict,
+    genes: dict,
+    seq: str,
+    white_list: Path | None = None,
+    black_list: Path | None = None,
+    min_depth: int = 40,
+    unique: bool = False,
+    l2: bool = False,
+) -> pd.DataFrame:
+    """Quantify lineages for a single BAM file."""
     # Load white list lineages if provided
     included_lineages = []
     if white_list:
@@ -73,75 +127,27 @@ def find_lineages(
         with open(black_list, "r") as f:
             excluded_lineages = f.read().splitlines()
 
-    sample_results = []
-    sample_names = []
-    if ".bam" in samples.suffix:
-        result = quantify_lineages(
-            sample=samples,
-            mut_lins=mut_lins,
-            genes=genes,
-            seq=seq,
-            black_list=included_lineages,
-            white_list=excluded_lineages,
-            min_depth=min_depth,
-            unique=unique,
-            l2=l2,
-            return_data=True,
-        )
-
-        if result is None:
-            logger.info("No coverage or analysis couldn't be performed.")
-        else:
-            sr, X, Y, covered_muts = result
-            if show_stacked:
-                plot_lineage_predictions(sr, X, Y, covered_muts, out)
-                plot_lineage_pie(sr, out)
-            sample_results.append(sr)
-            sample_names.append("")
-    else:
-        with open(samples, "r") as f:
-            sample_df = [line.strip().split("\t") for line in f if line.strip()]
-            for bam_path, sample_label in sample_df:
-                if bam_path.endswith(".bam"):
-                    path = Path(bam_path)
-                    sr = quantify_lineages(
-                        sample=path,
-                        mut_lins=mut_lins,
-                        genes=genes,
-                        seq=seq,
-                        white_list=included_lineages,
-                        black_list=excluded_lineages,
-                        return_data=False,
-                        min_depth=min_depth,
-                        unique=unique,
-                        l2=l2,
-                    )
-                    if sr:
-                        sample_results.append(sr)
-                        sample_names.append(sample_label)
-
-    if sample_results:
-        lineage_df = compute_lineage_df(sample_results, sample_names)
-        lineage_df.to_csv(out / "lineages.csv", index=False)
-
-        if ts:
-            plot_lineages_timeseries(sample_results, sample_names, out)
-        else:
-            plot_lineages(sample_results, sample_names, out, bool(white_list))
-
-
-def compute_lineage_df(sample_results, sample_names):
-    rows = []
-    for i, sample in enumerate(sample_results):
-        row = {"Sample name": sample_names[i]}
-        for key, value in sample.items():
-            row[key] = round(value, 3)
-        rows.append(row)
-    headers = ["Sample name"] + sorted(
-        set(key for sample in sample_results for key in sample.keys())
+    result = quantify_lineages(
+        sample=sample,
+        mut_lins=mut_lins,
+        genes=genes,
+        seq=seq,
+        white_list=included_lineages,
+        black_list=excluded_lineages,
+        min_depth=min_depth,
+        unique=unique,
+        l2=l2,
     )
-    df = pd.DataFrame(rows, columns=headers)
-    return df
+    if result is None:
+        logger.error(
+            f"No coverage or analysis couldn't be performed for {sample_name}."
+        )
+        return results_df
+
+    sr, _, _, _ = result
+    sr_df = pd.DataFrame(list(sr.items()), columns=["lineage", "abundance"])
+    sr_df.insert(0, "sample", sample_name)
+    return pd.concat([results_df, sr_df], ignore_index=True)
 
 
 def quantify_lineages(
@@ -154,20 +160,19 @@ def quantify_lineages(
     min_depth: int = 40,
     unique: bool = False,
     l2: bool = False,
-    return_data: bool = False,
-) -> dict | tuple | None:
+) -> Union[None, tuple[dict[str, float], np.ndarray, np.ndarray, list[str]]]:
     """
-    Identify and quantify lineages in a BAM file based on predefined mutations.
+    Identify and estimate abundance of lineages in a BAM file based on predefined mutations.
 
     Args:
-        bam_path: Path to the BAM file.
+        samples: Path to a BAM file or CSV file listing samples.
         mut_lins: Dictionary containing mutation lineages and their occurrences.
         genes: Dictionary mapping gene names to their start and end positions in the sequence.
         seq: Complete nucleotide sequence as a string.
-        black_list: Lineages to ignore.
-        return_data: Flag to return detailed data structures.
-        min_depth: Minimum read depth to consider a mutation covered.
-        lineages: List of lineages to consider.
+        outdir: Output directory for results and intermediate data. Defaults to the current directory.
+        white_list: Path to a TXT file containing lineages to include.
+        black_list: Path to a TXT file containing lineages to exclude.
+        min_depth: Minimum depth for a mutation to be considered.
         unique: Whether to consider unique mutations only.
         l2: Whether to use a secondary method for regression analysis.
 
@@ -233,9 +238,7 @@ def quantify_lineages(
     sample_results = {
         covered_lineages[i]: round(reg[i], 3) for i in range(len(covered_lineages))
     }
-    if return_data:
-        return sample_results, X, Y, covered_muts
-    return sample_results
+    return sample_results, X, Y, covered_muts
 
 
 def do_regression(lmps: list[list[float]], Y: np.ndarray):
