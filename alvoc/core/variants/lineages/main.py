@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-from alvoc.core.utils import create_dir, logging
+from alvoc.core.utils import create_dir, logging, precompute
 from alvoc.core.variants.lineages.regression import do_regression, do_regression_linear
 from alvoc.core.variants.mutations import find_mutants_in_bam
 from alvoc.core.variants.prepare import parse_lineages
@@ -13,7 +13,6 @@ from alvoc.core.variants.lineages.visualize import (
     plot_lineages,
 )
 from alvoc.core.utils.parse import parse_mutations
-from alvoc.core.utils.precompute import precompute
 
 logger = logging.get_logger()
 

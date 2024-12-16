@@ -1,8 +1,7 @@
 from pathlib import Path
 import pandas as pd
 from alvoc.core.amplicons.visualize import plot_depths, plot_depths_gc
-from alvoc.core.utils import create_dir
-from alvoc.core.utils.precompute import precompute
+from alvoc.core.utils import create_dir, precompute
 import pysam
 
 

@@ -7,8 +7,7 @@ from alvoc.core.variants.mutations.helpers import mut_in_col
 from alvoc.core.variants.mutations.visualize import plot_mutations
 from alvoc.core.variants.prepare import parse_lineages
 from alvoc.core.utils.parse import mut_idx, parse_mutation, snv_name
-from alvoc.core.utils.precompute import precompute
-from alvoc.core.utils import create_dir, logging
+from alvoc.core.utils import create_dir, logging, precompute
 
 logger = logging.get_logger()
 
