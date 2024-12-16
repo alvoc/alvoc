@@ -99,7 +99,7 @@ def find_mutants(
 
     if not results_df.empty:
         results_df.to_csv(out / "mutations_melted.csv", index=False)
-        # plot_mutations(results_df, min_depth, out)
+        plot_mutations(results_df, min_depth, out)
 
 
 def find_mutants_in_bam(bam_path: Path, mutations, genes, seq):
@@ -117,7 +117,7 @@ def find_mutants_in_bam(bam_path: Path, mutations, genes, seq):
     """
     mut_results = {}
 
-    with pysam.Samfile(str(bam_path), "rb") as samfile:
+    with pysam.Samfile(bam_path.as_posix(), "rb") as samfile:
         parsed_muts = {mut: parse_mutation(mut, genes, seq) for mut in mutations}
         mut_results = {
             mut: {snv_name(m): [0, 0] for m in parsed_muts[mut]} for mut in parsed_muts
