@@ -6,9 +6,11 @@ import pysam
 from alvoc.core.variants.mutations.helpers import mut_in_col
 from alvoc.core.variants.mutations.visualize import plot_mutations
 from alvoc.core.variants.prepare import parse_lineages
-from alvoc.core.utils import create_dir
 from alvoc.core.utils.parse import mut_idx, parse_mutation, snv_name
 from alvoc.core.utils.precompute import precompute
+from alvoc.core.utils import create_dir, logging
+
+logger = logging.get_logger()
 
 
 def find_mutants(
@@ -68,8 +70,12 @@ def find_mutants(
             genes=genes,
             seq=seq,
         )
-        mr_df = pd.DataFrame(list(results.items()), columns=["mutation", "frequency"])
-        mr_df.insert(0, "sample", samples.stem)
+        mr_df = pd.DataFrame.from_dict(
+            results,
+            orient="index",
+            columns=["mutation_count", "non_mutation_count"],
+        ).reset_index(names=["mutants"])
+        mr_df.insert(1, "sample", samples.stem)
         results_df = pd.concat([results_df, mr_df], ignore_index=True)
     else:
         sample_df = pd.read_csv(samples)
@@ -78,15 +84,19 @@ def find_mutants(
             sample_label = row["sample"]
             if bam_path.suffix == ".bam":
                 results = find_mutants_in_bam(
-                    bam_path = bam_path,
+                    bam_path=bam_path,
                     mutations=mutations,
                     genes=genes,
                     seq=seq,
                 )
-                mr_df = pd.DataFrame(list(results.items()), columns=["mutation", "frequency"])
-                mr_df.insert(0, "sample", sample_label)
+                mr_df = pd.DataFrame.from_dict(
+                    results,
+                    orient="index",
+                    columns=["mutation_count", "non_mutation_count"],
+                ).reset_index(names=["mutants"])
+                mr_df.insert(1, "sample", sample_label)
                 results_df = pd.concat([results_df, mr_df], ignore_index=True)
-   
+
     if not results_df.empty:
         results_df.to_csv(out / "mutations_melted.csv", index=False)
         # plot_mutations(results_df, min_depth, out)
@@ -95,13 +105,15 @@ def find_mutants(
 def find_mutants_in_bam(bam_path: Path, mutations, genes, seq):
     """Identify and quantify mutations from a BAM file.
 
-    Args:
-        bam_path (Path): Path to the BAM file.
-        mutations (list): A list of mutations to look for in the BAM file.
+        Args:
+            bam_path (Path): Path to the BAM file.
+            mutations (list): A list of mutations to look for in the BAM file.
 
-    Returns:
-        dict: A dictionary where keys are mutations and values are the maximal frequency
-              of each mutation and its count of occurrences and non-occurrences.
+        Returns:
+            dict: A dictionary where keys are mutation names, and values are lists containing:
+                - The count of occurrences (`mutation_count`) of the single nucleotide variation (SNV) with the highest observed frequency.
+                - The count of non-occurrences (`non_mutation_count`) corresponding to that SNV.
+    .
     """
     mut_results = {}
 
