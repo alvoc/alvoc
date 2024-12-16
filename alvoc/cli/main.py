@@ -139,7 +139,7 @@ def extract_gene_data(
     outdir=outdir
 ):
     """
-    Extracts gene coordinates and the genome sequence from a GenBank file or generates them using a virus taxonomic ID.
+    Extracts gene coordinates and the genome sequence from a GenBank file or generates them using an Entrez API search term.
     """
     out = create_dir(outdir=outdir)
     precompute(

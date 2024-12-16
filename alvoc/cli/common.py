@@ -7,7 +7,7 @@ import time
 
 # Common options
 virus: str = typer.Argument(
-    ..., help="Taxonomic ID of the virus, or path to the GenBank file"
+    ..., help="Path to a GenBank file or NCBI Entrez query terms"
 )
 outdir: Path = typer.Option(
     ".", "--outdir", "-o", help="Output directory for results and intermediate data"

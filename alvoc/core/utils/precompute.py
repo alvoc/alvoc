@@ -14,11 +14,10 @@ def precompute(
     email: str = "example@example.com",
 ) -> tuple[dict[str, tuple[int, int]], str]:
     """
-    Processes a GenBank file to extract gene information and sequence, or alternatively pass in a virus taxonomic ID
-    to automatically generate the necessary reference data. At least one of 'tax_id' or 'genbank_file' must be provided.
+    Processes a GenBank file to extract gene information and sequence, or alternatively pass in an NCBI query to automatically generate the necessary reference data. 
 
     Args:
-        virus : Taxonomic ID of the virus or Path to the GenBank file
+        virus : NCBI query for virus or Path to the GenBank file
         email : Email for accessing Entrez api.
         outdir : Output directory for results and intermediate data. Defaults to the current directory.
 
