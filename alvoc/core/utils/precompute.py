@@ -93,19 +93,19 @@ def extract_gene_info(organism):
     return gene_coordinates
 
 
-def download_virus_data(tax_id: str, outdir: Path, email: str):
+def download_virus_data(query: str, outdir: Path, email: str):
     """
     Downloads virus gene data from GenBank based on a given taxonomic ID.
 
     Args:
-        tax_id : Taxonomic ID of the virus.
+        query : Search term for the virus.
         outdir : Path to the output directory.
         email : Email for Entrez API.
     """
     try:
         Entrez.email = email
         search_handle = Entrez.esearch(
-            db="nucleotide", term=f"txid{tax_id}[Organism:exp] AND complete genome", retmax=1
+            db="nucleotide", term=query, retmax=1
         )
         search_results = Entrez.read(search_handle)
         search_handle.close()
@@ -115,7 +115,7 @@ def download_virus_data(tax_id: str, outdir: Path, email: str):
             or "IdList" not in search_results
             or not search_results["IdList"]
         ):
-            raise Exception(f"No results found for tax ID: {tax_id}")
+            raise Exception(f"No results found for: {query}")
 
         virus_id = search_results["IdList"][0]
         fetch_handle = Entrez.efetch(
@@ -126,7 +126,7 @@ def download_virus_data(tax_id: str, outdir: Path, email: str):
         with open(file_path, "w") as f:
             f.write(fetch_handle.read())
         fetch_handle.close()
-        logger.info(f"Downloaded data for tax ID {tax_id} and saved to {file_path}")
+        logger.info(f"Downloaded data for query and saved to {file_path}")
         return file_path.as_posix()
     except Exception as e:
         logger.error(f"An error occurred while downloading data: {e}")

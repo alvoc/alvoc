@@ -1,5 +1,6 @@
 import typer
 from alvoc.cli.common import virus, outdir
+from alvoc.core.utils import create_dir
 from alvoc.core.utils.precompute import precompute
 from alvoc.core.utils.convert import aa, nt
 
@@ -17,14 +18,15 @@ def convert_aa(
     """
     Convert amino acid mutation to nucleotide mutations for a given virus.
     """
-    genes, seq, _ = precompute(virus, outdir)
-    return aa(mut, genes, seq)
+    out = create_dir(outdir=outdir)
+    genes, seq = precompute(virus, out)
+    print(f"{mut} causes {aa(mut, genes, seq)[0]}")
 
 
 @convert_cli.command("nt")
 def convert_nt(
     virus=virus,
-    mut: str = typer.Option(
+    mut: str = typer.Argument(
         ..., help="Nucleotide mutation in the format 'BASENPOSBASE'"
     ),
     outdir=outdir,
@@ -32,5 +34,6 @@ def convert_nt(
     """
     Convert nucleotide mutation to amino acid mutation for a given virus.
     """
-    genes, seq, _ = precompute(virus, outdir)
-    return nt(mut, genes, seq)
+    out = create_dir(outdir=outdir)
+    genes, seq = precompute(virus, out)
+    print(f"{mut} causes {nt(mut, genes, seq)}")
