@@ -37,12 +37,15 @@ def plot_depths(results_df: pd.DataFrame, inserts: list[list], outdir: Path):
         sns.barplot,
         "amplicon_id",
         "Log depth",
-        order=sorted(results_df["amplicon_id"].unique(), key=lambda x: int(x.split("_")[-1])),
+        order=sorted(
+            results_df["amplicon_id"].unique(), key=lambda x: int(x.split("_")[-1])
+        ),
         hue_order=["Pool 1", "Pool 2"],
     )
     grid.add_legend()
     plt.xticks(rotation=90)
     plt.savefig(outdir / "depths.png", dpi=300)
+
 
 def plot_depths_gc(results_df: pd.DataFrame, outdir: Path):
     """
@@ -58,7 +61,9 @@ def plot_depths_gc(results_df: pd.DataFrame, outdir: Path):
 
     # Ensure there is enough data for plotting
     if results_df.empty:
-        raise ValueError("No data available for plotting. Check the `results_df` DataFrame.")
+        raise ValueError(
+            "No data available for plotting. Check the `results_df` DataFrame."
+        )
 
     # Create regression plots for GC content vs log depth
     grid = sns.FacetGrid(results_df, col="sample", height=4, aspect=1)
@@ -74,7 +79,9 @@ def plot_depths_gc(results_df: pd.DataFrame, outdir: Path):
             print(f"  Pearson correlation statistic: {statistic:.3f}")
             print(f"  Pearson p-value: {pvalue:.3g}")
         else:
-            print(f"Sample: {sample} - Insufficient data to compute Pearson correlation.")
+            print(
+                f"Sample: {sample} - Insufficient data to compute Pearson correlation."
+            )
 
     # Save the plot
     plt.savefig(outdir / "gc_depths.png", dpi=300)

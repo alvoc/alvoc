@@ -16,6 +16,7 @@ outdir: Path = typer.Option(
 # Initialize Rich console
 console = Console()
 
+
 # Spinner decorator with dynamic text updates and exclusive spinner output
 def with_spinner(func):
     @wraps(func)

@@ -14,7 +14,7 @@ def precompute(
     email: str = "example@example.com",
 ) -> tuple[dict[str, tuple[int, int]], str]:
     """
-    Processes a GenBank file to extract gene information and sequence, or alternatively pass in an NCBI query to automatically generate the necessary reference data. 
+    Processes a GenBank file to extract gene information and sequence, or alternatively pass in an NCBI query to automatically generate the necessary reference data.
 
     Args:
         virus : NCBI query for virus or Path to the GenBank file
@@ -103,9 +103,7 @@ def download_virus_data(query: str, outdir: Path, email: str):
     """
     try:
         Entrez.email = email
-        search_handle = Entrez.esearch(
-            db="nucleotide", term=query, retmax=1
-        )
+        search_handle = Entrez.esearch(db="nucleotide", term=query, retmax=1)
         search_results = Entrez.read(search_handle)
         search_handle.close()
 

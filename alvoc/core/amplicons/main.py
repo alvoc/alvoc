@@ -51,7 +51,12 @@ def calculate_amplicon_metrics(
         # Combine results for this sample
         all_results.extend(
             [
-                {"sample": sample_name, "amplicon_id": amplicon, "depth": coverage[amplicon], "gc_content": gc_content[amplicon]}
+                {
+                    "sample": sample_name,
+                    "amplicon_id": amplicon,
+                    "depth": coverage[amplicon],
+                    "gc_content": gc_content[amplicon],
+                }
                 for amplicon in coverage
             ]
         )
@@ -63,13 +68,20 @@ def calculate_amplicon_metrics(
             bam_path = Path(row["bam"])
             sample_name = row["sample"]
             if bam_path.suffix == ".bam":
-                coverage = find_depths_in_bam(bam_path, inserts_list, max_depth=max_depth)
+                coverage = find_depths_in_bam(
+                    bam_path, inserts_list, max_depth=max_depth
+                )
                 gc_content = calculate_gc_depth(seq, inserts_list)
 
                 # Combine results for this sample
                 all_results.extend(
                     [
-                        {"sample": sample_name, "amplicon_id": amplicon, "depth": coverage[amplicon], "gc_content": gc_content[amplicon]}
+                        {
+                            "sample": sample_name,
+                            "amplicon_id": amplicon,
+                            "depth": coverage[amplicon],
+                            "gc_content": gc_content[amplicon],
+                        }
                         for amplicon in coverage
                     ]
                 )
@@ -78,8 +90,8 @@ def calculate_amplicon_metrics(
     # Save results to CSV
     if not results_df.empty:
         results_df.to_csv(out / "amplicon_metrics.csv", index=False)
-        plot_depths(results_df,inserts_list,out)
-        plot_depths_gc(results_df,out)
+        plot_depths(results_df, inserts_list, out)
+        plot_depths_gc(results_df, out)
 
     return results_df
 
@@ -126,6 +138,8 @@ def calculate_gc_depth(sequence: str, inserts: list[list]) -> dict:
         start, end, amplicon_id = int(insert[1]), int(insert[2]), insert[3]
         region_seq = sequence[start:end]
         gc_count = region_seq.count("G") + region_seq.count("C")
-        gc_content[amplicon_id] = gc_count / len(region_seq) if len(region_seq) > 0 else 0
+        gc_content[amplicon_id] = (
+            gc_count / len(region_seq) if len(region_seq) > 0 else 0
+        )
 
     return gc_content

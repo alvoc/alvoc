@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 def plot_mutations(
     df,
     min_depth,
@@ -25,13 +26,12 @@ def plot_mutations(
     df["total_count"] = df["mutation_count"] + df["non_mutation_count"]
     df["fraction"] = df.apply(
         lambda row: row["mutation_count"] / row["total_count"]
-        if row["total_count"] >= min_depth else -1,
+        if row["total_count"] >= min_depth
+        else -1,
         axis=1,
     )
 
-    fractions_pivot = df.pivot(
-        index="mutants", columns="sample", values="fraction"
-    )
+    fractions_pivot = df.pivot(index="mutants", columns="sample", values="fraction")
 
     no_reads = fractions_pivot.map(lambda x: x == -1)
 

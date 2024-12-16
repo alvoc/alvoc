@@ -31,10 +31,13 @@ def plot_lineages(
 
     # Filter lineages based on the `all_lins` flag
     if not all_lins:
-        data = data[data['abundance'] > 0.01]
+        data = data[data["abundance"] > 0.01]
 
     # Pivot the data for heatmap compatibility
-    pivot_table = data.pivot(index='lineage', columns='sample', values='abundance').fillna(0) * 100
+    pivot_table = (
+        data.pivot(index="lineage", columns="sample", values="abundance").fillna(0)
+        * 100
+    )
     sample_names = pivot_table.columns.tolist()
     lineage_names = pivot_table.index.tolist()
     lin_fractions = pivot_table.values

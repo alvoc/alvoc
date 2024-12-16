@@ -118,7 +118,7 @@ def find_mutants(
     ),
     mutations: Path = typer.Argument(..., help="Path to mutations"),
     min_depth: int = typer.Option(10, "--min-depth", "-d", help="Minimum depth"),
-    outdir=outdir
+    outdir=outdir,
 ):
     """
     Find mutations in sequencing data, either from BAM files or a sample list.
@@ -127,24 +127,20 @@ def find_mutants(
         virus=virus,
         samples=samples,
         constellations=constellations,
-        mutations_path=mutations,        
+        mutations_path=mutations,
         min_depth=min_depth,
         outdir=outdir,
     )
 
+
 @cli.command()
-def extract_gene_data(
-    virus=virus,
-    outdir=outdir
-):
+def extract_gene_data(virus=virus, outdir=outdir):
     """
     Extracts gene coordinates and the genome sequence from a GenBank file or generates them using an Entrez API search term.
     """
     out = create_dir(outdir=outdir)
-    precompute(
-        virus=virus,
-        outdir=out
-    )
+    precompute(virus=virus, outdir=out)
+
 
 @cli.command()
 def amplicons(
