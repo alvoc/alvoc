@@ -15,68 +15,75 @@ from alvoc.core.lineages.visualize import (
 )
 from alvoc.core.mutations.analyze import find_mutants_in_bam
 from alvoc.core.utils.parse import parse_mutations
+from alvoc.core.utils.precompute import precompute
 
 logger = logging.get_logger()
 
 
 def find_lineages(
-    file_path: Path,
-    mut_lin_path: Path,
-    genes: dict,
-    seq: str,
+    virus: str,
+    samples: Path,
+    constellations: Path,
     outdir: Path,
-    black_list: list[str] = [],
-    lineages_path: Path | None = None,
-    ts: bool = False,
+    white_list: Path | None = None,
+    black_list: Path | None = None,
     min_depth: int = 40,
-    show_stacked: bool = False,
     unique: bool = False,
     l2: bool = False,
+    show_stacked: bool = False,
+    ts: bool = False,
 ):
     """
-    Processes either a single BAM file or a list of BAM files specified in a text file
-    to find and analyze lineages based on the given parameters.
+    Processes either a single BAM file or a samplesheet to find and analyze lineages based on the given parameters.
 
     Args:
-        file_path (str): Path to a BAM file or a text file containing paths to BAM files.
-        mut_lins: Dictionary containing mutation lineages and their occurrences.
-        genes: Dictionary mapping gene names to their start and end positions in the sequence.
-        seq: Complete nucleotide sequence as a string.
-        lineages_path (str, optional): Path to a text file containing lineages to be considered.
-        ts (bool): Whether to create a time-series plot.
-        min_depth (int): Minimum depth for a mutation to be considered.
-        show_stacked (bool): Whether to show stacked visualizations.
-        unique (bool): Whether to consider unique mutations only.
-        l2 (bool): Whether to use a secondary method for regression analysis.
-        outdir : Output directory for results and intermediate data. Defaults to the current directory.
+        virus: Taxonomic ID of the virus, or path to the GenBank file
+        samples: Path to a BAM file or CSV file listing samples.
+        constellations: Path to a JSON file containing mutation lineage constellations.
+        outdir: Output directory for results and intermediate data. Defaults to the current directory.
+        white_list: Path to a TXT file containing lineages to include.
+        black_list: Path to a TXT file containing lineages to exclude.
+        min_depth: Minimum depth for a mutation to be considered.
+        show_stacked: Whether to show stacked visualizations.
+        unique: Whether to consider unique mutations only.
+        l2: Whether to use a secondary method for regression analysis.
+        ts: Whether to create a time-series plot.
 
     Returns:
         None: Results are printed or plotted directly.
     """
-    sample_results = []
-    sample_names = []
+    # Extract the genome sequence and gene coordinates for the target virus
+    genes, seq, out = precompute(virus, outdir)
 
     # Convert lineage data to mutation-centric format
-    new_mut_lins = parse_lineages(mut_lin_path)
+    mut_lins = parse_lineages(constellations)
 
-    # Load lineages if a path is provided
-    lineages = []
-    if lineages_path:
-        with open(lineages_path, "r") as f:
-            lineages = f.read().splitlines()
+    # Load white list lineages if provided
+    included_lineages = []
+    if white_list:
+        with open(white_list, "r") as f:
+            included_lineages = f.read().splitlines()
 
-    if ".bam" in file_path.suffix:
+    # Load black listed lineages if provided
+    excluded_lineages = []
+    if black_list:
+        with open(black_list, "r") as f:
+            excluded_lineages = f.read().splitlines()
+
+    sample_results = []
+    sample_names = []
+    if ".bam" in samples.suffix:
         result = quantify_lineages(
-            bam_path=file_path,
-            mut_lins=new_mut_lins,
+            sample=samples,
+            mut_lins=mut_lins,
             genes=genes,
             seq=seq,
-            black_list=black_list,
-            return_data=True,
+            black_list=included_lineages,
+            white_list=excluded_lineages,
             min_depth=min_depth,
-            lineages=lineages,
             unique=unique,
             l2=l2,
+            return_data=True,
         )
 
         if result is None:
@@ -84,25 +91,25 @@ def find_lineages(
         else:
             sr, X, Y, covered_muts = result
             if show_stacked:
-                plot_lineage_predictions(sr, X, Y, covered_muts, outdir)
-                plot_lineage_pie(sr, outdir)
+                plot_lineage_predictions(sr, X, Y, covered_muts, out)
+                plot_lineage_pie(sr, out)
             sample_results.append(sr)
             sample_names.append("")
     else:
-        with open(file_path, "r") as f:
-            samples = [line.strip().split("\t") for line in f if line.strip()]
-            for bam_path, sample_label in samples:
+        with open(samples, "r") as f:
+            sample_df = [line.strip().split("\t") for line in f if line.strip()]
+            for bam_path, sample_label in sample_df:
                 if bam_path.endswith(".bam"):
                     path = Path(bam_path)
                     sr = quantify_lineages(
-                        bam_path=path,
-                        mut_lins=new_mut_lins,
+                        sample=path,
+                        mut_lins=mut_lins,
                         genes=genes,
                         seq=seq,
-                        black_list=black_list,
+                        white_list=included_lineages,
+                        black_list=excluded_lineages,
                         return_data=False,
                         min_depth=min_depth,
-                        lineages=lineages,
                         unique=unique,
                         l2=l2,
                     )
@@ -112,12 +119,12 @@ def find_lineages(
 
     if sample_results:
         lineage_df = compute_lineage_df(sample_results, sample_names)
-        lineage_df.to_csv(outdir / "lineages.csv", index=False)
+        lineage_df.to_csv(out / "lineages.csv", index=False)
 
         if ts:
-            plot_lineages_timeseries(sample_results, sample_names, outdir)
+            plot_lineages_timeseries(sample_results, sample_names, out)
         else:
-            plot_lineages(sample_results, sample_names, outdir, bool(lineages_path))
+            plot_lineages(sample_results, sample_names, out, bool(white_list))
 
 
 def compute_lineage_df(sample_results, sample_names):
@@ -135,16 +142,16 @@ def compute_lineage_df(sample_results, sample_names):
 
 
 def quantify_lineages(
-    bam_path: Path,
+    sample: Path,
     mut_lins: dict,
     genes: dict,
     seq: str,
     black_list: list[str] = [],
-    return_data: bool = False,
+    white_list: list[str] = [],
     min_depth: int = 40,
-    lineages: list[str] = [],
     unique: bool = False,
     l2: bool = False,
+    return_data: bool = False,
 ) -> dict | tuple | None:
     """
     Identify and quantify lineages in a BAM file based on predefined mutations.
@@ -170,7 +177,7 @@ def quantify_lineages(
         aa_mutations = [
             mut
             for mut in aa_mutations
-            if sum(mut_lins[mut][lin] for lin in lineages) == 1
+            if sum(mut_lins[mut][lin] for lin in white_list) == 1
         ]
 
     logger.info("Converting to nucleotides")
@@ -178,7 +185,7 @@ def quantify_lineages(
 
     logger.info("Finding mutants")
     mut_results = find_mutants_in_bam(
-        bam_path=bam_path, mutations=mutations, genes=genes, seq=seq
+        bam_path=sample, mutations=mutations, genes=genes, seq=seq
     )
 
     logger.info("Filtering out mutations below min_depth")
@@ -194,8 +201,8 @@ def quantify_lineages(
         if mut_results[m][0] > 0 and mut_lins[m][lin] > 0.5
     }
 
-    if lineages:
-        covered_lineages = [lin for lin in lineages if lin in covered_lineages]
+    if white_list:
+        covered_lineages = [lin for lin in white_list if lin in covered_lineages]
     else:
         covered_lineages = list(covered_lineages)
 

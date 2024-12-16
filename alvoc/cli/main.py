@@ -55,49 +55,64 @@ def callback(
     ),
 ):
     # Set default logging to INFO
-    init_logger(20) 
+    init_logger(20)
     pass
 
 
 @cli.command()
 def find_lineages(
     virus=virus,
-    samples_path: Path = typer.Argument(
-        ..., help="Path to the file listing samples or a single BAM file."
+    samples: Path = typer.Argument(
+        ..., help="Path to a BAM file or TXT file listing samples."
     ),
-    mut_lin_path: Path = typer.Argument(
-        ..., help="Path to the json file containing mutation lineages."
+    constellations: Path = typer.Argument(
+        ..., help="Path to a JSON file containing mutation lineage constellations."
     ),
-    lineages_path: Path = typer.Option(
-        None, "--lineages-path", "-l", help="Path to lineages"
+    white_list: Path = typer.Option(
+        None,
+        "--white-list",
+        "-wl",
+        help="Path to a TXT file containing lineages to inclue.",
     ),
-    black_list: list[str] = typer.Option(
-        [], "--black-list", "-b", help="List of lineages to black list"
+    black_list: Path = typer.Option(
+        None,
+        "--black-list",
+        "-bl",
+        help="Path to a TXT file containing lineages to exclude.",
     ),
-    ts: bool = typer.Option(False, "--ts", "-t", help="Time series"),
-    min_depth: int = typer.Option(40, "--min-depth", "-d", help="Minimum depth"),
+    min_depth: int = typer.Option(
+        40, "--min-depth", "-d", help="Minimum depth for a mutation to be considered."
+    ),
+    unique: bool = typer.Option(
+        False, "--unique", "-u", help="Whether to consider unique mutations only."
+    ),
+    l2: bool = typer.Option(
+        False,
+        "--l2",
+        "-l2",
+        help="Whether to use a secondary method for regression analysis.",
+    ),
+    ts: bool = typer.Option(
+        False, "--ts", "-t", help="Whether to create a time-series plot."
+    ),
     show_stacked: bool = typer.Option(
-        False, "--show-stacked", "-s", help="Show stacked"
+        False, "--show-stacked", "-s", help="Whether to show stacked visualizations."
     ),
-    unique: bool = typer.Option(False, "--unique", "-u", help="Unique"),
-    l2: bool = typer.Option(False, "--l2", "-l2", help="Level 2"),
     outdir=outdir,
 ):
     """Find lineages in samples"""
-    genes, seq, out = precompute(virus, outdir)
     fl(
-        file_path=samples_path,
-        mut_lin_path=mut_lin_path,
-        genes=genes,
-        seq=seq,
-        outdir=out,
+        virus=virus,
+        samples=samples,
+        constellations=constellations,
+        outdir=outdir,
+        white_list=white_list,
         black_list=black_list,
-        lineages_path=lineages_path,
-        ts=ts,
         min_depth=min_depth,
-        show_stacked=show_stacked,
         unique=unique,
         l2=l2,
+        ts=ts,
+        show_stacked=show_stacked
     )
 
 
