@@ -12,3 +12,5 @@ wheels/
 
 # test data
 data
+
+.ruff_cache
