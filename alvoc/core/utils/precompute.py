@@ -3,7 +3,7 @@ from pathlib import Path
 
 from Bio import Entrez, SeqIO
 
-from alvoc.core.utils import get_logger
+from alvoc.core.utils.logging import get_logger
 
 logger = get_logger()
 
