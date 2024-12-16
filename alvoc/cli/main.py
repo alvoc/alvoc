@@ -63,7 +63,7 @@ def callback(
 def find_lineages(
     virus=virus,
     samples: Path = typer.Argument(
-        ..., help="Path to a BAM file or TXT file listing samples."
+        ..., help="Path to a BAM file or CSV file listing samples."
     ),
     constellations: Path = typer.Argument(
         ..., help="Path to a JSON file containing mutation lineage constellations."
@@ -112,7 +112,7 @@ def find_lineages(
 def find_mutants(
     virus=virus,
     samples: Path = typer.Argument(
-        ..., help="Path to a BAM file or TXT file listing samples."
+        ..., help="Path to a BAM file or CSV file listing samples."
     ),
     constellations: Path = typer.Argument(
         ..., help="Path to a JSON file containing mutation lineage constellations."
