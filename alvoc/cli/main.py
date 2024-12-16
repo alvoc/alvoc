@@ -2,6 +2,7 @@ import typer
 from pathlib import Path
 
 from alvoc.cli.common import virus, outdir, with_spinner
+from alvoc.core.amplicons.main import calculate_amplicon_metrics
 from alvoc.core.utils import create_dir
 from alvoc.core.utils.precompute import precompute
 from alvoc.core.variants.mutations import find_mutants as fm
@@ -9,7 +10,6 @@ from alvoc.core.variants.mutations import find_mutants as fm
 from alvoc.core.variants.lineages import find_lineages as fl
 from alvoc.core.utils.logging import init_logger
 
-from alvoc.cli.amplicons import amplicons_cli
 from alvoc.cli.convert import convert_cli
 from importlib.metadata import version as get_version
 
@@ -34,7 +34,6 @@ def command_with_spinner(*args, **kwargs):
 
 cli.command = command_with_spinner
 
-cli.add_typer(amplicons_cli, name="amplicons")
 cli.add_typer(convert_cli, name="convert")
 
 
@@ -146,6 +145,20 @@ def extract_gene_data(
         virus=virus,
         outdir=out
     )
+
+@cli.command()
+def amplicons(
+    virus=virus,
+    samples: Path = typer.Argument(
+        ..., help="Path to a BAM file or CSV file listing samples."
+    ),
+    inserts_path: Path = typer.Argument(
+        ..., help="Path to the BED file detailing the regions (amplicons) to evaluate."
+    ),
+    outdir=outdir,
+):
+    """Get amplicon metrics such as coverage, gc_content and visualizations"""
+    calculate_amplicon_metrics(virus, samples, inserts_path, outdir)
 
 
 if __name__ == "__main__":
