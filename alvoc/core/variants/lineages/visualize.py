@@ -57,7 +57,7 @@ def plot_lineages(
         figsize=(figure_width, figure_height),
         gridspec_kw={"top": 1 - top_margin, "bottom": bottom_margin},
     )
-    ax = sns.heatmap(
+    _ = sns.heatmap(
         lin_fractions,
         annot=True,
         cmap=sns.cm.rocket_r,
