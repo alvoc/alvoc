@@ -1,12 +1,12 @@
 import typer
-import json
 from pathlib import Path
 
-from alvoc.core.utils.precompute import precompute
 from alvoc.cli.common import virus, outdir, with_spinner
-from alvoc.core.mutations.analyze import find_mutants as find_mutants_internal
+from alvoc.core.utils import create_dir
+from alvoc.core.utils.precompute import precompute
+from alvoc.core.variants.mutations import find_mutants as fm
 
-from alvoc.core.lineages import find_lineages as fl
+from alvoc.core.variants.lineages import find_lineages as fl
 from alvoc.core.utils.logging import init_logger
 
 from alvoc.cli.amplicons import amplicons_cli
@@ -111,26 +111,42 @@ def find_lineages(
 @cli.command()
 def find_mutants(
     virus=virus,
-    samples_path: Path = typer.Argument(
-        ..., help="Path to the file listing samples or a single BAM file."
+    samples: Path = typer.Argument(
+        ..., help="Path to a BAM file or TXT file listing samples."
     ),
-    mut_lin_path: Path = typer.Argument(
-        ..., help="Path to the json file containing mutation lineages."
+    constellations: Path = typer.Argument(
+        ..., help="Path to a JSON file containing mutation lineage constellations."
     ),
-    mutations_path: Path = typer.Argument(..., help="Path to mutations"),
+    mutations: Path = typer.Argument(..., help="Path to mutations"),
     min_depth: int = typer.Option(40, "--min-depth", "-d", help="Minimum depth"),
-    outdir=outdir,
+    outdir=outdir
 ):
     """
     Find mutations in sequencing data, either from BAM files or a sample list.
     """
-    genes, seq, out = precompute(virus, outdir)
-    mut_lins = {}
-    with open(mut_lin_path, "r") as file:
-        mut_lins = json.load(file)
-    find_mutants_internal(
-        samples_path, mutations_path, min_depth, mut_lins, genes, seq, out
+    fm(
+        virus=virus,
+        samples=samples,
+        constellations=constellations,
+        mutations_path=mutations,        
+        min_depth=min_depth,
+        outdir=outdir,
     )
+
+@cli.command()
+def coordinates(
+    virus=virus,
+    outdir=outdir
+):
+    """
+    Processes a GenBank file to extract gene information and sequence, or alternatively pass in a virus taxonomic ID to generate gene coordinates and a genome sequence.
+    """
+    out = create_dir(outdir=outdir)
+    precompute(
+        virus=virus,
+        outdir=out
+    )
+
 
 
 if __name__ == "__main__":

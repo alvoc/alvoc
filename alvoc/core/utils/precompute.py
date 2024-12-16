@@ -105,7 +105,7 @@ def download_virus_data(tax_id: str, outdir: Path, email: str):
     try:
         Entrez.email = email
         search_handle = Entrez.esearch(
-            db="nucleotide", term=f"txid{tax_id}[Organism:exp]", retmax=1
+            db="nucleotide", term=f"txid{tax_id}[Organism:exp] AND complete genome", retmax=1
         )
         search_results = Entrez.read(search_handle)
         search_handle.close()
