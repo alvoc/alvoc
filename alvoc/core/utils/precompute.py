@@ -3,9 +3,9 @@ from pathlib import Path
 
 from Bio import Entrez, SeqIO
 
-from alvoc.core.utils import logging
+from alvoc.core.utils import get_logger
 
-logger = logging.get_logger()
+logger = get_logger()
 
 
 def precompute(

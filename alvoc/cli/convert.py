@@ -1,8 +1,6 @@
 import typer
 from alvoc.cli.common import virus, outdir
-from alvoc.core.utils import create_dir
-from alvoc.core.utils.precompute import precompute
-from alvoc.core.utils.convert import aa, nt
+from alvoc.core.utils import create_dir, precompute, aa, nt
 
 convert_cli = typer.Typer(no_args_is_help=True, help="Tools to convert mutations")
 
