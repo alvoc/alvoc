@@ -1,6 +1,9 @@
 name: Release
 
 on: 
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -11,7 +14,9 @@ permissions:
       
 jobs:
   tests:
-    if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'bump:')
+    if: >-
+      (github.event_name == 'pull_request') || 
+      (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'bump:'))
     runs-on: ubuntu-latest
 
     steps:
@@ -27,6 +32,9 @@ jobs:
       - name: Run tests
         run: uv run --frozen pytest
 
+      - name: Lint Code
+        run: uv lint
+  
   bump-version:
     if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'bump:')
     runs-on: ubuntu-latest
