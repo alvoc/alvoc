@@ -4,6 +4,7 @@ import pandas as pd
 import pysam
 
 from alvoc.core.variants.mutations.helpers import mut_in_col
+from alvoc.core.variants.mutations.visualize import plot_mutations
 from alvoc.core.variants.prepare import parse_lineages
 from alvoc.core.utils import create_dir
 from alvoc.core.utils.parse import mut_idx, parse_mutation, snv_name
@@ -16,7 +17,7 @@ def find_mutants(
     constellations: Path,
     mutations_path: Path,
     outdir: Path,
-    min_depth: int = 40,
+    min_depth: int = 10,
 ):
     """Find mutations in sequencing data, either from BAM files or a sample list. Uses a dictionary of mutation lineages provided as a parameter.
 
@@ -67,44 +68,28 @@ def find_mutants(
             genes=genes,
             seq=seq,
         )
-        print(results)
+        mr_df = pd.DataFrame(list(results.items()), columns=["mutation", "frequency"])
+        mr_df.insert(0, "sample", samples.stem)
+        results_df = pd.concat([results_df, mr_df], ignore_index=True)
     else:
-        pass
-        # sample_df = pd.read_csv(samples)
-        # for _, row in sample_df.iterrows():
-        #     bam_path = Path(row["bam"])
-        #     sample_label = row["sample"]
-        #     if bam_path.suffix == ".bam":
-        #         results = find_mutants_in_bam(
-        #             bam_path = bam_path,
-        #             mutations=mutations,
-        #             genes=genes,
-        #             seq=seq,
-        #         )
-    # # Handle BAM files or sample lists
-    # if file_path.suffix == ".bam":
-    #     sample_results.append(find_mutants_in_bam(file_path, mutations, genes, seq))
-    #     sample_names.append("")
-    # else:
-    #     with file_path.open("r") as file:
-    #         samples = [line.split("\t") for line in file.read().split("\n") if line]
-    #     for sample in samples:
-    #         sample_path = Path(sample[0])
-    #         if sample_path.suffix == ".bam":
-    #             sample_results.append(
-    #                 find_mutants_in_bam(sample_path, mutations, genes, seq)
-    #             )
-    #             sample_names.append(sample[1])
-    #             print_mut_results(sample_results[-1], min_depth)
-
-    # mutants_name = mutations_path.stem
-    # mutation_df = compute_mutation_df(sample_results, sample_names, min_depth=10)
-    # mutation_df.to_csv(outdir / "mutations.csv", index=False)
-
-    # plot_mutations(sample_results, sample_names, min_depth, mutants_name, outdir)
-    # if not results_df.empty:
-    # results_df.to_csv(out / "mutations_melted.csv", index=False)
-    # plot_mutations(results_df, min_depth, mutants_name, out)
+        sample_df = pd.read_csv(samples)
+        for _, row in sample_df.iterrows():
+            bam_path = Path(row["bam"])
+            sample_label = row["sample"]
+            if bam_path.suffix == ".bam":
+                results = find_mutants_in_bam(
+                    bam_path = bam_path,
+                    mutations=mutations,
+                    genes=genes,
+                    seq=seq,
+                )
+                mr_df = pd.DataFrame(list(results.items()), columns=["mutation", "frequency"])
+                mr_df.insert(0, "sample", sample_label)
+                results_df = pd.concat([results_df, mr_df], ignore_index=True)
+   
+    if not results_df.empty:
+        results_df.to_csv(out / "mutations_melted.csv", index=False)
+        # plot_mutations(results_df, min_depth, out)
 
 
 def find_mutants_in_bam(bam_path: Path, mutations, genes, seq):

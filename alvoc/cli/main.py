@@ -118,7 +118,7 @@ def find_mutants(
         ..., help="Path to a JSON file containing mutation lineage constellations."
     ),
     mutations: Path = typer.Argument(..., help="Path to mutations"),
-    min_depth: int = typer.Option(40, "--min-depth", "-d", help="Minimum depth"),
+    min_depth: int = typer.Option(10, "--min-depth", "-d", help="Minimum depth"),
     outdir=outdir
 ):
     """
