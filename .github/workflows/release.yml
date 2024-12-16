@@ -33,7 +33,7 @@ jobs:
         run: uv run --frozen pytest
 
       - name: Lint Code
-        run: uv lint
+        run: uv run ruff check .
   
   bump-version:
     if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'bump:')
