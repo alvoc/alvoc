@@ -10,9 +10,6 @@ from alvoc.core.utils import create_dir, logging
 from alvoc.core.lineages.prepare import parse_lineages
 from alvoc.core.lineages.visualize import (
     plot_lineages,
-    plot_lineages_timeseries,
-    plot_lineage_pie,
-    plot_lineage_predictions,
 )
 from alvoc.core.mutations.analyze import find_mutants_in_bam
 from alvoc.core.utils.parse import parse_mutations
@@ -62,7 +59,7 @@ def find_lineages(
 
     if samples.suffix == ".bam":
         # Process single BAM file
-        process_sample(
+        results_df = process_sample(
             sample=samples,
             sample_name=samples.stem,
             results_df=results_df,
@@ -97,8 +94,9 @@ def find_lineages(
                 )
 
     # Save results to a CSV file
-    results_df.to_csv(out / "lineages.csv", index=False)
-    # plot_lineages(sample_results, sample_names, out, bool(white_list))
+    if not results_df.empty:
+        results_df.to_csv(out / "lineage_abundance.csv", index=False)
+        plot_lineages(results_df, out, bool(white_list))
 
 
 def process_sample(
