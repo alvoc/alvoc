@@ -95,7 +95,9 @@ def find_lineages(
 
     # Save results to a CSV file
     if not results_df.empty:
-        results_df.to_csv(out / "lineage_abundance.csv", index=False)
+        results_df.to_csv(out / "lineage_abundance_melted.csv", index=False)
+        pivoted_df = results_df.pivot(index='lineage', columns='sample', values='abundance')
+        pivoted_df.to_csv(out / "lineage_abundance_pivoted.csv")
         plot_lineages(results_df, out, bool(white_list))
 
 
