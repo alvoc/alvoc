@@ -1,0 +1,33 @@
+name: Pull Request
+
+on: 
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Base Setup
+        uses: ./.github/workflows/actions/setup-base
+        with:
+          environment: dev
+          uv_version: "0.5.9"
+
+      - name: Run tests
+        run: uv run --frozen pytest
+
+      - name: Lint Code
+        run: uv run ruff check .
