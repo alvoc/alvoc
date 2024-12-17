@@ -78,5 +78,44 @@ docker pull ghcr.io/alvoc/alvoc:latest
 docker run --rm -it ghcr.io/alvoc/alvoc:latest
 ```
 
+---
+
+## What is Alvoc?  
+
+Alvoc is a command-line tool designed to analyze viral sequencing data with a focus on identifying **variants of concern** and their defining mutations. With the ongoing rise of infectious diseases like **SARS-CoV-2**, monitoring and understanding viral evolution has become critical for researchers, public health officials, and laboratories.  
+
+### Why Use Alvoc?  
+
+1. **Lineage Identification**  
+    - Alvoc helps determine which viral lineages are present in your sequencing data. For example, it can identify emerging lineages like **B.1.1.7 (Alpha)** or **P.1 (Gamma)** for SARS-CoV-2.  
+    - Use Alvoc when you need to:  
+        - Compare samples to known lineage-defining mutations.  
+        - Detect specific lineages in samples from an outbreak.  
+        - Include or exclude specific lineages (whitelisting/blacklisting).  
+
+2. **Mutation Detection**  
+    - Alvoc allows you to detect mutations in sequencing data with customizable depth thresholds.  
+    - Use this feature to:  
+        - Find known or novel mutations in viral samples.  
+        - Focus on specific mutations like **S:N501Y** or **E484K** that are critical for vaccine efficacy or transmissibility.  
+
+3. **Amplicon Quality Assessment**  
+    - Viral sequencing often relies on **amplicon-based approaches**. Alvoc provides tools to assess amplicon metrics like **coverage** and **GC content**.  
+    - This helps ensure high-quality sequencing data for downstream analyses.  
+
+### When to Use Alvoc?  
+
+You should use Alvoc if you are:  
+
+- A **researcher** analyzing viral sequencing data to study genetic variation and evolution.  
+- A **public health analyst** monitoring variants of concern during outbreaks.  
+- A **bioinformatician** processing large-scale sequencing data to identify mutations and lineages.  
+- A **laboratory scientist** validating amplicon-based sequencing data for accuracy.  
+
+Alvoc simplifies these workflows into a set of streamlined commands, saving time and improving consistency across analyses.  
+
+---
+
+
 # License
 This project is licensed under the terms of the MIT license.
