@@ -7,8 +7,8 @@ hide:
 
 ---
 
-::: mkdocs-typer
+::: mkdocs-click
     :module: alvoc.cli
-    :command: cli
+    :command: click_cli
     :prog_name: alvoc
 

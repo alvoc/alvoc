@@ -51,7 +51,7 @@ plugins:
   - termynal
 
 markdown_extensions:
-  - mkdocs-typer
+  - mkdocs-click
   - pymdownx.snippets:
       base_path: .
 
