@@ -143,7 +143,7 @@ An example of how the data should look like is below:
    }
 ```
 
-We provide some [example scripts](https://github.com/alvoc/alvoc/tree/main/scripts/examples) for Sars-CoV-2 and influenze (H3N2) constellations. 
+We provide some [example scripts](https://github.com/alvoc/alvoc/tree/main/examples) for Sars-CoV-2 and influenze (H3N2) constellations. 
 
 
 ---
