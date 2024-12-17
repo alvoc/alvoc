@@ -77,15 +77,24 @@ jobs:
           uv publish
 
   publish-docker:
+    if: github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'bump:')
     runs-on: ubuntu-latest
-    needs: pypi-publish
+    needs: bump-version
 
     permissions:
       contents: read
       packages: write
       id-token: write
+      
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
       - name: Build and Publish Docker Image
-        uses: ./.github/workflows/actions/setup-base
+        uses: ./.github/workflows/actions/package-image
         with:
           image_name: ${{ github.repository }}
