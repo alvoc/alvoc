@@ -41,6 +41,8 @@ theme:
     - search.suggest
 nav:
 - Home: index.md
+- Usage: usage.md
+- Reference: reference.md
 - Changelog: changelog.md
 
 plugins:
@@ -49,6 +51,8 @@ plugins:
   - termynal
 
 markdown_extensions:
+  - admonition
+  - mkdocs-click
   - pymdownx.snippets:
       base_path: .
 

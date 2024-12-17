@@ -1,3 +1,3 @@
-__all__ = ["cli"]
+__all__ = ["cli", "click_cli"]
 
-from alvoc.cli.main import cli
+from alvoc.cli.main import cli, click_cli
