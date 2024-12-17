@@ -98,3 +98,4 @@ jobs:
         uses: ./.github/workflows/actions/package-image
         with:
           image_name: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}

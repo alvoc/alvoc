@@ -8,6 +8,9 @@ inputs:
   image_name:
     description: "Name of the Docker image to publish"
     required: true
+  token:
+    description: "Token for authentication"
+    required: true
 outputs:
   digest:
     description: "Digest of the published Docker image"
@@ -19,7 +22,7 @@ runs:
       with:
         registry: ${{ inputs.registry }}
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ inputs.token }}
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
