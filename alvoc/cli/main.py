@@ -16,7 +16,7 @@ from typer.main import get_command
 
 cli = typer.Typer(
     no_args_is_help=True,
-    help="Identify frequencies of concerning mutations from aligned reads",
+    help="Abundance learning for variants of concern",
 )
 
 # Inject spinner into all commands
