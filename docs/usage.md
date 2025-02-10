@@ -102,7 +102,7 @@ $ alvoc find-lineages some_accession_id samples.csv constellations.json --outdir
 
 ### Constellations
 
-A key requirement for the `find-lineages` command is the constellations file is a json input file containing lineage-centric data. Constellations should include a list of site mutations in nucleotide format.
+A key requirement for the `find-lineages` command is is a json input file containing lineage-centric data. We use the term "constellations" to convey how lineage-defining mutations are organized. Constellations should include a list of site mutations in nucleotide format.
 
 For ease of use, we provide a `make-constellations` command for generation this file using nexstrain trees.
 
