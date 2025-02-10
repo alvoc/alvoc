@@ -1,3 +1,10 @@
+## 0.3.1 (2025-02-10)
+
+### Fix
+
+- ensure docs and pr ci dont run on commit bump
+- ensure ci publishes on tag release
+
 ## 0.3.0 (2025-02-10)
 
 ### Feat
