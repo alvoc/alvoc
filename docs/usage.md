@@ -90,7 +90,7 @@ You can test how it works using the following examples to get a feel for it:
 
 ## Finding Lineages
 
-The **`find-lineages`** command identifies viral lineages from sequencing data. Running it will output a lineage abundance heatmap and two csv files. 
+The **`find-lineages`** command identifies viral lineages from sequencing data. Running it will output a lineage abundance heatmap and two csv files.
 
 ### Command Example
 
@@ -102,9 +102,17 @@ $ alvoc find-lineages some_accession_id samples.csv constellations.json --outdir
 
 ### Constellations
 
-A key requirement for the `find-lineages` command is the constellations file is a json input file containing lineage-centric data. Constellations should include a list of site mutations in nucleotide format. 
+A key requirement for the `find-lineages` command is the constellations file is a json input file containing lineage-centric data. Constellations should include a list of site mutations in nucleotide format.
 
-An example of how the data should look like is below:
+For ease of use, we provide a `make-constellations` command for generation this file using nexstrain trees.
+
+<!-- termynal -->
+
+```console
+$ alvoc make_constellations <nexstrain_tree_dataset_url> --outdir .
+```
+
+While the above command is useful, nexstrain has a limited set of pathogens, and in addition, it may not capture all the lineage data necessary for your experiment. For those cases, we recommend generating your own constellations file. An example of how this data should look like is below:
 
 ```json
    {
@@ -143,8 +151,7 @@ An example of how the data should look like is below:
    }
 ```
 
-We provide some [example scripts](https://github.com/alvoc/alvoc/tree/main/examples) for Sars-CoV-2 and influenze (H3N2) constellations. 
-
+We provide some [example scripts](https://github.com/alvoc/alvoc/tree/main/examples) for Sars-CoV-2 Pango lineage constellations.
 
 ---
 
@@ -155,11 +162,13 @@ The **`find-mutants`** command identifies specific mutations from sequencing and
 ### Command Example
 
 <!-- termynal -->
+
 ```console
 $ alvoc find-mutants virus.gb  samples.csv constellations.json mutations.txt --outdir ./results
 ```
 
-Here's what the mutations.txt  file might look like
+Here's what the mutations.txt file might look like
+
 ```text
 S:N501Y
 G23012A
@@ -188,6 +197,7 @@ $ alvoc amplicons virus.gb samples.csv inserts.bed --outdir ./results
 ```
 
 ---
+
 # Tools
 
 ### Converting Mutations
@@ -207,5 +217,5 @@ $ alvoc convert aa virus S:N501Y
 <!-- termynal -->
 
 ```console
-$ alvoc convert nt virus G23012A 
+$ alvoc convert nt virus G23012A
 ```
