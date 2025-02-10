@@ -40,7 +40,7 @@ cli.add_typer(convert_cli, name="convert")
 
 def version_callback(value: bool):
     if value:
-        typer.echo(f"Alvoc: {get_version("alvoc")}")
+        typer.echo(f"Alvoc: {get_version('alvoc')}")
         raise typer.Exit()
 
 
