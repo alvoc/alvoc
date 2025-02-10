@@ -32,7 +32,7 @@ runs:
       shell: ${{inputs.shell}}
       run: |
         if [ "${{ inputs.environment }}" == "dev" ]; then
-          uv sync --frozen --dev 
+          uv sync --frozen --dev --no-install-project
         else
-          uv sync --frozen --no-dev
+          uv sync --frozen --no-dev --no-install-project
         fi
