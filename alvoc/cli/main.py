@@ -14,6 +14,8 @@ from alvoc.cli.convert import convert_cli
 from importlib.metadata import version as get_version
 from typer.main import get_command
 
+from alvoc.core.utils.constellations import make_constellations as mc
+
 cli = typer.Typer(
     no_args_is_help=True,
     help="Abundance learning for variants of concern",
@@ -156,6 +158,20 @@ def amplicons(
 ):
     """Get amplicon metrics such as coverage, gc_content and visualizations"""
     calculate_amplicon_metrics(virus, samples, inserts_path, outdir)
+
+
+@cli.command()
+def make_constellations(
+    tree_url: str = typer.Argument(..., help="Nextstrain phylogeny tree dataset url"),
+    proportion_threshold: int = typer.Option(1, "--proportion_threshold", "-pt", help="Minimum proportion of nodes in a clade required to include a mutation"),
+    outdir=outdir,
+):
+    """
+    Generates constellations using the provided nextstrain phylogeny dataset.
+    """
+    out = create_dir(outdir=outdir)
+    mc(tree_url, out, proportion_threshold)
+
 
 click_cli = get_command(cli)
 
