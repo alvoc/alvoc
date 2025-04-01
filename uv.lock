@@ -25,7 +25,7 @@ wheels = [
 
 [[package]]
 name = "alvoc"
-version = "0.3.0"
+version = "0.3.1"
 source = { editable = "." }
 dependencies = [
     { name = "biopython" },
@@ -33,6 +33,7 @@ dependencies = [
     { name = "numpy" },
     { name = "ortools" },
     { name = "pysam" },
+    { name = "requests" },
     { name = "scikit-learn" },
     { name = "seaborn" },
     { name = "typer" },
@@ -61,6 +62,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.0.0,<3.0.0" },
     { name = "ortools", specifier = ">=9.10.4067,<10.0.0" },
     { name = "pysam", specifier = ">=0.22.1,<1.0.0" },
+    { name = "requests", specifier = ">=2.32.3" },
     { name = "scikit-learn", specifier = ">=1.5.1,<2.0.0" },
     { name = "seaborn", specifier = ">=0.13.2,<1.0.0" },
     { name = "typer", specifier = ">=0.12.3,<1.0.0" },
