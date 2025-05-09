@@ -1,3 +1,4 @@
+
 import typer
 from pathlib import Path
 
@@ -6,9 +7,9 @@ from alvoc.core.amplicons.main import calculate_amplicon_metrics
 from alvoc.core.utils import create_dir
 from alvoc.core.utils.precompute import precompute
 from alvoc.core.variants.mutations import find_mutants as fm
-
 from alvoc.core.variants.lineages import find_lineages as fl
 from alvoc.core.utils.logging import init_logger
+from alvoc.core.utils.qc import qc as qc_command
 
 from alvoc.cli.convert import convert_cli
 from importlib.metadata import version as get_version
@@ -163,7 +164,12 @@ def amplicons(
 @cli.command()
 def make_constellations(
     tree_url: str = typer.Argument(..., help="Nextstrain phylogeny tree dataset url"),
-    proportion_threshold: int = typer.Option(1, "--proportion_threshold", "-pt", help="Minimum proportion of nodes in a clade required to include a mutation"),
+    proportion_threshold: int = typer.Option(
+        1,
+        "--proportion_threshold",
+        "-pt",
+        help="Minimum proportion of nodes in a clade required to include a mutation",
+    ),
     outdir=outdir,
 ):
     """
@@ -171,6 +177,34 @@ def make_constellations(
     """
     out = create_dir(outdir=outdir)
     mc(tree_url, out, proportion_threshold)
+
+
+@cli.command()
+def qc(
+    samples: Path = typer.Argument(
+        ...,
+        help="Path to a BAM file, directory of BAMs, or CSV listing sample,bam paths.",
+    ),
+    out: Path = typer.Option(
+        None,
+        "-o",
+        "--out",
+        help="Optional path to write QC summary CSV; prints markdown to stdout if not given.",
+    ),
+):
+    """
+    Summarize basic alignment statistics for one or more BAM files.
+
+    Samples can be:
+    - A single BAM file.
+    - A directory containing multiple .bam files.
+    - A CSV file with columns 'sample' and 'bam' listing sample names and BAM paths.
+    """
+    qc_command(
+        samples=samples,
+        out=out,
+    )
+    
 
 
 click_cli = get_command(cli)
