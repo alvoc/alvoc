@@ -3,6 +3,8 @@ from pathlib import Path
 import requests
 import os
 from collections import defaultdict
+import sys
+import logging
 
 def download_phylogenetic_tree(url):
     """
@@ -12,12 +14,11 @@ def download_phylogenetic_tree(url):
     Returns:
         dict: Parsed JSON data of the phylogenetic tree.
     """
-    headers = {
-        "Accept": "application/vnd.nextstrain.dataset.main+json"
-    }
+    headers = {"Accept": "application/vnd.nextstrain.dataset.main+json"}
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     return response.json()
+
 
 def calculate_clade_mutation_proportions(tree, proportion_threshold=0.90):
     """
@@ -30,7 +31,9 @@ def calculate_clade_mutation_proportions(tree, proportion_threshold=0.90):
     """
     clade_data = defaultdict(set)  # Map clade name -> set of mutations
     clade_node_counts = defaultdict(int)  # Map clade name -> node count
-    mutation_counts = defaultdict(lambda: defaultdict(int))  # Map clade name -> mutation -> count
+    mutation_counts = defaultdict(
+        lambda: defaultdict(int)
+    )  # Map clade name -> mutation -> count
 
     total_mutations = 0  # Track total mutations across all clades
     retained_mutations = 0  # Track retained mutations after filtering
@@ -45,7 +48,9 @@ def calculate_clade_mutation_proportions(tree, proportion_threshold=0.90):
         # Retrieve the clade name for this node
         clade_name = node.get("node_attrs", {}).get("clade_membership", {}).get("value")
         # Retrieve mutations specific to this branch
-        current_mutations = set(node.get("branch_attrs", {}).get("mutations", {}).get("nuc", []))
+        current_mutations = set(
+            node.get("branch_attrs", {}).get("mutations", {}).get("nuc", [])
+        )
 
         # Combine inherited mutations with current mutations
         all_mutations = inherited_mutations | current_mutations
@@ -53,7 +58,9 @@ def calculate_clade_mutation_proportions(tree, proportion_threshold=0.90):
         # Reversions: Handle mutations that restore the root sequence
         # Example: If "A100T" happens in an ancestor and "T100A" happens here, remove it from all_mutations
         for mutation in current_mutations:
-            if mutation[1:] + mutation[0] in inherited_mutations:  # Check for a reversion
+            if (
+                mutation[1:] + mutation[0] in inherited_mutations
+            ):  # Check for a reversion
                 all_mutations.remove(mutation)  # Remove reversion
 
         # Update mutation counts and node counts for this clade
@@ -104,13 +111,14 @@ def calculate_clade_mutation_proportions(tree, proportion_threshold=0.90):
 
     return clade_data
 
+
 def create_constellation_entries(clade_data):
     """
     Create constellation entries for each clade in the specified format.
     Args:
         clade_data (dict): Dictionary with clade names and their mutations.
     Returns:
-        dict: Dictionary where keys are clade names and values are dictionaries 
+        dict: Dictionary where keys are clade names and values are dictionaries
               with keys 'lineage', 'label', 'description', 'sources', 'tags', 'sites', and 'note'.
     """
     constellation_entries = {}
@@ -122,9 +130,37 @@ def create_constellation_entries(clade_data):
             "sources": [],
             "tags": [clade_name],
             "sites": list(mutations),
-            "note": "Unique mutations for sublineage"
+            "note": "Unique mutations for sublineage",
         }
     return constellation_entries
+
+def require_unique_sites(constellation_entries, min_unique: int = 1):
+    """
+    Ensure each lineage has at least `min_unique` unique sites.
+    Exits with error if any lineage has fewer.
+    """
+    logger = logging.getLogger(__name__)
+    profiles = {lin: set(cfg["sites"]) for lin, cfg in constellation_entries.items()}
+    all_lins = set(profiles)
+
+    bad = []
+    for lin, sites in profiles.items():
+        other = set().union(*(profiles[o] for o in all_lins if o != lin))
+        unique = sites - other
+        if len(unique) < min_unique:
+            bad.append((lin, len(unique)))
+
+    if bad:
+        msg = "\n".join(f"  • {lin}: {n} unique sites" for lin, n in bad)
+        sys.stderr.write(
+            f"ERROR: the following lineages have fewer than {min_unique} unique sites:\n{msg}\n\n"
+            "Adjust --min-unique-sites or enrich your constellation.\n"
+        )
+        sys.exit(1)
+
+    logger.info("All %d lineages have ≥%d unique sites", len(profiles), min_unique)
+
+
 
 def save_constellations_to_json(constellation_entries, output_dir):
     """
@@ -137,6 +173,7 @@ def save_constellations_to_json(constellation_entries, output_dir):
     with open(output_file, "w") as outfile:
         json.dump(constellation_entries, outfile, indent=4)
     print(f"Constellation JSON file created: {output_file}")
+
 
 def save_lineages_to_txt(clade_names, output_dir):
     """
@@ -151,21 +188,32 @@ def save_lineages_to_txt(clade_names, output_dir):
             outfile.write(clade_name + "\n")
     print(f"Lineages file created: {output_file}")
 
-def make_constellations(url : str, outdir: Path, proportion_threshold: int ):
+
+def make_constellations(url: str, outdir: Path, proportion_threshold: float, min_unique: int):
     print("Downloading phylogenetic tree...")
     tree_data = download_phylogenetic_tree(url)
 
     print("Calculating clade mutation proportions...")
     tree = tree_data["tree"]  # Assuming the tree starts here
-    clade_data = calculate_clade_mutation_proportions(tree, proportion_threshold=proportion_threshold)
+    clade_data = calculate_clade_mutation_proportions(
+        tree, proportion_threshold=proportion_threshold
+    )
 
     # Remove clades with no significant mutations
-    empty_lineages = [lineage for lineage, mutations in clade_data.items() if not mutations]
+    empty_lineages = [
+        lineage for lineage, mutations in clade_data.items() if not mutations
+    ]
     for lineage in empty_lineages:
         del clade_data[lineage]
 
     print("Creating constellation entries...")
     constellation_entries = create_constellation_entries(clade_data)
+
+    print(f"Ensure each lineage has at least {min_unique} unique site")
+    require_unique_sites(constellation_entries, min_unique=min_unique)
+
+    print("Saving constellation JSON...")
+    save_constellations_to_json(constellation_entries, outdir)
 
     print("Saving constellation JSON...")
     save_constellations_to_json(constellation_entries, outdir)

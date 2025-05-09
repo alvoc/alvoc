@@ -160,15 +160,26 @@ def amplicons(
     """Get amplicon metrics such as coverage, gc_content and visualizations"""
     calculate_amplicon_metrics(virus, samples, inserts_path, outdir)
 
+def validate_min_unique(ctx, param, value: int) -> int:
+    if value < 1:
+        raise typer.BadParameter(f"{param.name!r} must be ≥ 1 (got {value})")
+    return value
 
 @cli.command()
 def make_constellations(
     tree_url: str = typer.Argument(..., help="Nextstrain phylogeny tree dataset url"),
-    proportion_threshold: int = typer.Option(
-        1,
+    proportion_threshold: float = typer.Option(
+        0.9,
         "--proportion_threshold",
         "-pt",
         help="Minimum proportion of nodes in a clade required to include a mutation",
+    ),
+    min_unique_sites: int = typer.Option(
+        1,
+        "--min-unique-sites",
+        "-mu",
+        help="Require at least this many globally unique NA sites per lineage",
+        callback=validate_min_unique
     ),
     outdir=outdir,
 ):
@@ -176,7 +187,7 @@ def make_constellations(
     Generates constellations using the provided nextstrain phylogeny dataset.
     """
     out = create_dir(outdir=outdir)
-    mc(tree_url, out, proportion_threshold)
+    mc(tree_url, out, proportion_threshold, min_unique_sites)
 
 
 @cli.command()
