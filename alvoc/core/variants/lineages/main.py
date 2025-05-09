@@ -234,7 +234,10 @@ def quantify_lineages(
         X, reg = do_regression(lmps, Y)
     else:
         X, reg, mut_diffs = do_regression_linear(lmps, Y, covered_muts)
-
+        total = sum(reg)
+        if total > 0:
+            reg = [coef/total for coef in reg]
+    
     sample_results = {
         covered_lineages[i]: round(reg[i], 3) for i in range(len(covered_lineages))
     }
