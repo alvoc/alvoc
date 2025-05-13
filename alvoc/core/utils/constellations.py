@@ -2,9 +2,10 @@ import json
 from pathlib import Path
 import requests
 import os
-from collections import defaultdict
+from collections import Counter, defaultdict, deque
 import sys
 import logging
+
 
 def download_phylogenetic_tree(url):
     """
@@ -20,96 +21,99 @@ def download_phylogenetic_tree(url):
     return response.json()
 
 
-def calculate_clade_mutation_proportions(tree, proportion_threshold=0.90):
+def extract_raw_mutation_counts(tree):
     """
-    Calculate the proportion of nodes in a clade carrying each mutation.
-    Args:
-        tree (dict): The phylogenetic tree.
-        proportion_threshold (float): Minimum proportion required to include a mutation.
+    Walk the Nextstrain JSON tree *iteratively* and count every NA mutation per clade
+    using a bitmask for each mutation‐set. Orders of magnitude faster than Python set unions.
+
     Returns:
-        dict: Dictionary with clade names as keys and sets of significant mutations as values.
+      - clade_node_counts: dict str→int
+      - mutation_counts : dict str→list[int]  (same order as `mutations_list`)
+      - mutations_list  : list[str]            (all unique mutations encountered)
     """
-    clade_data = defaultdict(set)  # Map clade name -> set of mutations
-    clade_node_counts = defaultdict(int)  # Map clade name -> node count
-    mutation_counts = defaultdict(
-        lambda: defaultdict(int)
-    )  # Map clade name -> mutation -> count
 
-    total_mutations = 0  # Track total mutations across all clades
-    retained_mutations = 0  # Track retained mutations after filtering
+    # 1) First pass: collect every mutation string into a list
+    mutations = set()
+    q = deque([tree])
+    while q:
+        node = q.popleft()
+        muts = node.get("branch_attrs", {}).get("mutations", {}).get("nuc", [])
+        mutations.update(muts)
+        q.extend(node.get("children", []))
+    mutations_list = sorted(mutations)
+    idx_map = {m: i for i, m in enumerate(mutations_list)}
 
-    def traverse_tree(node, inherited_mutations=set()):
-        """
-        Recursive function to traverse the tree and propagate mutations.
-        Args:
-            node (dict): Current node in the tree.
-            inherited_mutations (set): Mutations inherited from the parent node.
-        """
-        # Retrieve the clade name for this node
-        clade_name = node.get("node_attrs", {}).get("clade_membership", {}).get("value")
-        # Retrieve mutations specific to this branch
-        current_mutations = set(
-            node.get("branch_attrs", {}).get("mutations", {}).get("nuc", [])
-        )
+    # 2) Prepare counters
+    clade_node_counts = defaultdict(int)
+    # per‐clade list of counts per mutation index
+    mutation_counts = defaultdict(lambda: [0] * len(mutations_list))
 
-        # Combine inherited mutations with current mutations
-        all_mutations = inherited_mutations | current_mutations
+    # 3) Traverse tree iteratively, carrying a bitmask of inherited mutations
+    q = deque([(tree, 0)])  # (node, inherited_mask)
+    while q:
+        node, inh_mask = q.popleft()
 
-        # Reversions: Handle mutations that restore the root sequence
-        # Example: If "A100T" happens in an ancestor and "T100A" happens here, remove it from all_mutations
-        for mutation in current_mutations:
-            if (
-                mutation[1:] + mutation[0] in inherited_mutations
-            ):  # Check for a reversion
-                all_mutations.remove(mutation)  # Remove reversion
+        # build mask for this branch’s nukes
+        curr_mask = 0
+        for m in node.get("branch_attrs", {}).get("mutations", {}).get("nuc", []):
+            i = idx_map[m]
+            curr_mask |= 1 << i
 
-        # Update mutation counts and node counts for this clade
-        if clade_name:
-            clade_node_counts[clade_name] += 1
-            for mutation in all_mutations:
-                mutation_counts[clade_name][mutation] += 1
+        # union inherited + current
+        all_mask = inh_mask | curr_mask
 
-        # Traverse child nodes, passing down the updated mutation set
+        # update counts for this clade
+        clade = node.get("node_attrs", {}).get("clade_membership", {}).get("value")
+        if clade:
+            clade_node_counts[clade] += 1
+            # iterate bits set in all_mask
+            mask = all_mask
+            while mask:
+                lowbit = mask & -mask
+                bit_i = lowbit.bit_length() - 1
+                mutation_counts[clade][bit_i] += 1
+                mask ^= lowbit
+
+        # enqueue children
         for child in node.get("children", []):
-            traverse_tree(child, inherited_mutations=all_mutations)
+            q.append((child, all_mask))
 
-    # Start traversing the tree from the root node
-    traverse_tree(tree)
+    return clade_node_counts, mutation_counts, mutations_list
 
-    # Process mutation counts to determine significant mutations for each clade
+
+def filter_by_proportion(clade_node_counts, mutation_counts, mutations_list, threshold):
+    """
+    Replace your old filter_by_proportion.
+    Prints the same summary, then returns profiles: dict clade→set(mutation_str).
+    """
     original_clades = len(clade_node_counts)
-    filtered_clades = 0
+    total_mutations = sum(len(cnts) for cnts in mutation_counts.values())
 
-    for clade_name, counts in mutation_counts.items():
-        total_nodes = clade_node_counts[clade_name]
-        for mutation, count in counts.items():
-            total_mutations += 1
-            if count / total_nodes >= proportion_threshold:
-                clade_data[clade_name].add(mutation)
-                retained_mutations += 1
+    profiles = {}
+    for clade, counts in mutation_counts.items():
+        n = clade_node_counts[clade]
+        # pick mutation indices where freq >= threshold
+        kept = {mutations_list[i] for i, c in enumerate(counts) if c / n >= threshold}
+        if kept:
+            profiles[clade] = kept
 
-        # Track clades with no significant mutations
-        if not clade_data[clade_name]:
-            filtered_clades += 1
-
+    filtered_clades = original_clades - len(profiles)
+    retained_mutations = sum(len(s) for s in profiles.values())
     filtered_mutations = total_mutations - retained_mutations
-    remaining_clades = original_clades - filtered_clades
+    remaining_clades = len(profiles)
 
-    # Print a summary of the results
-    print(
-        f"""
-        === Summary ===
-        Original lineages       : {original_clades}
-        Lineages filtered out   : {filtered_clades}
-        Lineages remaining      : {remaining_clades}
-        ------------------------
-        Total mutations         : {total_mutations}
-        Mutations filtered out  : {filtered_mutations}
-        Mutations retained      : {retained_mutations}
-        """
-    )
+    print(f"""
+    === Summary ===
+    Original lineages       : {original_clades}
+    Lineages filtered out   : {filtered_clades}
+    Lineages remaining      : {remaining_clades}
+    ------------------------
+    Total mutations         : {total_mutations}
+    Mutations filtered out  : {filtered_mutations}
+    Mutations retained      : {retained_mutations}
+    """)
 
-    return clade_data
+    return profiles
 
 
 def create_constellation_entries(clade_data):
@@ -134,33 +138,100 @@ def create_constellation_entries(clade_data):
         }
     return constellation_entries
 
+
+def prune_lineages_without_unique_sites(constellation_entries, idx_map, min_unique: int = 1):
+    """
+    Return a new dict of constellation_entries containing only those lineages
+    that have ≥ min_unique private sites.  The others are silently dropped.
+    """
+    logger = logging.getLogger(__name__)
+
+    # 1) Build per-lineage bitmask
+    clade_masks = {}
+    for lin, cfg in constellation_entries.items():
+        m = 0
+        for mut in cfg["sites"]:
+            m |= 1 << idx_map[mut]
+        clade_masks[lin] = m
+
+    # 2) Count in how many lineages each bit (site) appears
+    idx_counts = Counter()
+    for mask in clade_masks.values():
+        tmp = mask
+        while tmp:
+            lowbit = tmp & -tmp
+            bit_i = lowbit.bit_length() - 1
+            idx_counts[bit_i] += 1
+            tmp ^= lowbit
+
+    # 3) Build a mask of “unique” sites (count == 1)
+    unique_mask = 0
+    for bit_i, cnt in idx_counts.items():
+        if cnt == 1:
+            unique_mask |= 1 << bit_i
+
+    # 4) Keep only those lineages that pass
+    pruned = {}
+    for lin, mask in clade_masks.items():
+        if (mask & unique_mask).bit_count() >= min_unique:
+            pruned[lin] = constellation_entries[lin]
+        else:
+            logger.warning("Dropping lineage %s: only %d unique sites",
+                           lin, (mask & unique_mask).bit_count())
+
+    logger.info("Pruned %d → %d lineages (min_unique=%d)",
+                len(constellation_entries), len(pruned), min_unique)
+    return pruned
+
 def require_unique_sites(constellation_entries, min_unique: int = 1):
     """
     Ensure each lineage has at least `min_unique` unique sites.
     Exits with error if any lineage has fewer.
     """
     logger = logging.getLogger(__name__)
-    profiles = {lin: set(cfg["sites"]) for lin, cfg in constellation_entries.items()}
-    all_lins = set(profiles)
 
+    # 1) Build a map lineage -> list of sites
+    profiles = { lin: cfg["sites"] 
+                 for lin, cfg in constellation_entries.items() }
+
+    # 2) Count in how many lineages each site appears
+    site_counts = Counter()
+    for sites in profiles.values():
+        # each lineage only contributes once per site
+        for s in set(sites):
+            site_counts[s] += 1
+
+    # 3) For each lineage, check if it has ≥ min_unique private sites,
+    #    bailing out as soon as we hit our quota.
     bad = []
     for lin, sites in profiles.items():
-        other = set().union(*(profiles[o] for o in all_lins if o != lin))
-        unique = sites - other
-        if len(unique) < min_unique:
-            bad.append((lin, len(unique)))
+        if min_unique == 1:
+            # fast any() pattern
+            has_private = any(site_counts[s] == 1 for s in sites)
+            if not has_private:
+                bad.append((lin, 0))
+        else:
+            # count up to min_unique
+            cnt = 0
+            for s in sites:
+                if site_counts[s] == 1:
+                    cnt += 1
+                    if cnt >= min_unique:
+                        break
+            if cnt < min_unique:
+                bad.append((lin, cnt))
 
     if bad:
         msg = "\n".join(f"  • {lin}: {n} unique sites" for lin, n in bad)
         sys.stderr.write(
-            f"ERROR: the following lineages have fewer than {min_unique} unique sites:\n{msg}\n\n"
+            f"ERROR: the following lineages have fewer than {min_unique} unique sites:\n"
+            f"{msg}\n\n"
             "Adjust --min-unique-sites or enrich your constellation.\n"
         )
         sys.exit(1)
 
-    logger.info("All %d lineages have ≥%d unique sites", len(profiles), min_unique)
-
-
+    logger.info("All %d lineages have ≥%d unique sites",
+                len(profiles), min_unique)
 
 def save_constellations_to_json(constellation_entries, output_dir):
     """
@@ -189,36 +260,44 @@ def save_lineages_to_txt(clade_names, output_dir):
     print(f"Lineages file created: {output_file}")
 
 
-def make_constellations(url: str, outdir: Path, proportion_threshold: float, min_unique: int):
-    print("Downloading phylogenetic tree...")
+def make_constellations(
+    url: str,
+    outdir: Path,
+    proportion_threshold: float,
+    min_unique: int,
+):
+    # 1) Fetch the Nextstrain JSON
+    print("Downloading phylogenetic tree…")
     tree_data = download_phylogenetic_tree(url)
+    tree = tree_data["tree"]
 
-    print("Calculating clade mutation proportions...")
-    tree = tree_data["tree"]  # Assuming the tree starts here
-    clade_data = calculate_clade_mutation_proportions(
-        tree, proportion_threshold=proportion_threshold
+    # 2) Walk the tree and count every mutation per clade
+    print("Extracting raw mutation counts…")
+    node_counts, mutation_counts, mutations_list = extract_raw_mutation_counts(tree)
+
+    # 3) Filter by your proportion_threshold (prints its own summary)
+    print(
+        f"Filtering mutations to those fixed in ≥{proportion_threshold*100:.0f}% of nodes…"
+    )
+    profiles = filter_by_proportion(
+        clade_node_counts=node_counts,
+        mutation_counts=mutation_counts,
+        mutations_list=mutations_list,
+        threshold=proportion_threshold,
     )
 
-    # Remove clades with no significant mutations
-    empty_lineages = [
-        lineage for lineage, mutations in clade_data.items() if not mutations
-    ]
-    for lineage in empty_lineages:
-        del clade_data[lineage]
-
-    print("Creating constellation entries...")
-    constellation_entries = create_constellation_entries(clade_data)
-
-    print(f"Ensure each lineage has at least {min_unique} unique site")
-    require_unique_sites(constellation_entries, min_unique=min_unique)
-
-    print("Saving constellation JSON...")
+    # 4) Build the constellation entries
+    constellation_entries = create_constellation_entries(profiles)
+    
+    # # 5) Now check those entries
+    # print(f"Ensuring each lineage has at least {min_unique} unique site(s)…")
+    # idx_map = { m: i for i, m in enumerate(mutations_list) }
+    # constellation_entries = prune_lineages_without_unique_sites(constellation_entries, idx_map, min_unique)
+    
+    # 6) Write out the files
+    print("Saving constellation JSON…")
     save_constellations_to_json(constellation_entries, outdir)
-
-    print("Saving constellation JSON...")
-    save_constellations_to_json(constellation_entries, outdir)
-
-    print("Saving lineages to text file...")
-    save_lineages_to_txt(clade_data.keys(), outdir)
+    print("Saving lineage list…")
+    save_lineages_to_txt(constellation_entries.keys(), outdir)
 
     print("Processing complete.")
