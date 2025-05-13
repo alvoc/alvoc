@@ -62,6 +62,23 @@ def extract_raw_mutation_counts(tree):
         # union inherited + current
         all_mask = inh_mask | curr_mask
 
+        # === drop true reversions ===
+        tmp = curr_mask
+        while tmp:
+            lowbit = tmp & -tmp
+            i = lowbit.bit_length() - 1
+            mut = mutations_list[i]
+            # parse "A100T" → ref='A', pos='100', alt='T'
+            ref, pos, alt = mut[0], mut[1:-1], mut[-1]
+            reverse = f"{alt}{pos}{ref}"
+            if reverse in idx_map:
+                j = idx_map[reverse]
+                if (inh_mask >> j) & 1:            # if reverse was inherited
+                    all_mask &= ~(1 << i)         # drop this forward mutation
+            tmp ^= lowbit
+        # ================================
+
+
         # update counts for this clade
         clade = node.get("node_attrs", {}).get("clade_membership", {}).get("value")
         if clade:
