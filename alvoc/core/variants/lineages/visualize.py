@@ -73,7 +73,7 @@ def plot_lineages(
     plt.xlabel(xlabel)
     plt.xticks(rotation=30, ha="right", rotation_mode="anchor")
     plt.ylabel(ylabel)
-    plt.subplots_adjust(bottom=0.3, left=0.6)
+    plt.subplots_adjust(bottom=0.3, left=0.3)
 
     # Save the plot
     outdir = Path(outdir)
