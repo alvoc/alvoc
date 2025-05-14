@@ -196,7 +196,7 @@ def qc(
         ...,
         help="Path to a BAM file, directory of BAMs, or CSV listing sample,bam paths.",
     ),
-    out: Path = typer.Option(
+    outdir: Path = typer.Option(
         None,
         "-o",
         "--out",
@@ -211,6 +211,7 @@ def qc(
     - A directory containing multiple .bam files.
     - A CSV file with columns 'sample' and 'bam' listing sample names and BAM paths.
     """
+    out = create_dir(outdir=outdir)
     qc_command(
         samples=samples,
         out=out,

@@ -53,6 +53,10 @@ def qc(samples: Path, out: Path):
             }
         )
 
+    # Ensure 'out' is a file path, not a directory
+    if out.is_dir():
+        out = out / "qc_summary.csv"
+
     # Output results
     result_df = pandas.DataFrame.from_records(records)
     if out:
@@ -60,7 +64,7 @@ def qc(samples: Path, out: Path):
         typer.echo(f"QC summary written to {out}")
 
     # Plot and save the histogram of mapping rates
-    plot_file = Path(out).with_suffix(".png")
+    plot_file = out.with_suffix(".png")
     plot_mapping_rate_hist(result_df, plot_file)
     typer.echo(f"Mapping rate histogram saved to {plot_file}")
 
