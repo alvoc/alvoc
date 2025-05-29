@@ -179,6 +179,11 @@ def quantify_lineages(
     Returns:
         Sample results, optionally with additional data structures.
     """
+    # Make all mutation and lineage names uppercase for case-insensitive matching
+    mut_lins = {m.upper(): {lin.upper(): v for lin, v in lins.items()} for m, lins in mut_lins.items()}
+    black_list = [b.upper() for b in black_list]
+    white_list = [w.upper() for w in white_list]
+
     logger.info("Identifying target lineages")
     aa_mutations = [m for m in mut_lins.keys() if m not in black_list]
     if unique:
@@ -234,8 +239,14 @@ def quantify_lineages(
         X, reg = do_regression(lmps, Y)
     else:
         X, reg, mut_diffs = do_regression_linear(lmps, Y, covered_muts)
-
+    
+    # Normalize regression coefficients
+    total = sum(reg)
+    if total > 0:
+        reg = [coef/total for coef in reg]
+    
     sample_results = {
         covered_lineages[i]: round(reg[i], 3) for i in range(len(covered_lineages))
     }
     return sample_results, X, Y, covered_muts
+
