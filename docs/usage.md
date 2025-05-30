@@ -32,20 +32,25 @@ Alvoc comes with a variety of tools to help you with abundance learning. Take a 
 
 ```console
 $ alvoc --help
-Usage: alvoc [OPTIONS] COMMAND [ARGS]...
-Abundance learning for variants of concern
-Options:
-  --version                 Show current version.
-  --install-completion      Install shell completion.
-  --show-completion         Show shell completion code.
-  --help                    Show this message and exit.
+ Usage: alvoc [OPTIONS] COMMAND [ARGS]...                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                            
+ Abundance learning for variants of concern                                                                                                                                                                                                                 
+                                                                                                                                                                                                                                                            
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --version                     Current version of Alvoc                                                                                                                                                                                                   │
+│ --install-completion          Install completion for the current shell.                                                                                                                                                                                  │
+│ --show-completion             Show completion for the current shell, to copy it or customize the installation.                                                                                                                                           │
+│ --help                        Show this message and exit.                                                                                                                                                                                                │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ find-lineages       Find lineages in samples                                                                                                                                                                                                             │
+│ find-mutants        Find mutations in sequencing data, either from BAM files or a sample list.                                                                                                                                                           │
+│ extract-gene-data   Extracts gene coordinates and the genome sequence from a GenBank file or generates them using an Entrez API search term.                                                                                                             │
+│ amplicons           Get amplicon metrics such as coverage, gc_content and visualizations                                                                                                                                                                 │
+│ convert             Tools to convert mutations                                                                                                                                                                                                           │
+│ constellations      Tools to make constellations                                                                                                                                                                                                         │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
-Commands:
-  find-lineages       Find lineages in samples.
-  find-mutants        Identify mutations in sequencing data.
-  amplicons           Get amplicon metrics like coverage and GC content.
-  extract-gene-data   Extract gene data from GenBank or Entrez.
-  convert             Convert amino acid and nucleotide mutations.
 ```
 
 ## Extracting Gene Data
@@ -84,7 +89,7 @@ You can test how it works using the following examples to get a feel for it:
 
 !!! note
 
-    Every command in alvoc requires this input or alternatively a genbank file. In general, we recommend using the accession ID for data retrieval, as it is the most straightforward and unambiguous approach. However, the ability to search by taxonomy ID and refine queries provides flexibility for more complex use cases.
+    Every command in alvoc requires this input or alternatively a genbank file. In general, we recommend using the accession ID for data retrieval, as it is the most straightforward and unambiguous approach. However, the Entrez API is subject to rate limiting, so if you plan on performing multiple successive analyses, we recommend downloading the desired genbank file and supplying it in place of the accession ID.
 
 ---
 
@@ -102,17 +107,8 @@ $ alvoc find-lineages some_accession_id samples.csv constellations.json --outdir
 
 ### Constellations
 
-A key requirement for the `find-lineages` command is is a json input file containing lineage-centric data. We use the term "constellations" to convey how lineage-defining mutations are organized. Constellations should include a list of site mutations in nucleotide format.
+A key requirement for the `find-lineages` command is is a json input file containing lineage-centric data. We use the term "constellations" to convey how lineage-defining mutations are organized. Constellations should include a list of site mutations in nucleotide format. Currently our constellation format looks like this:
 
-For ease of use, we provide a `make-constellations` command for generation this file using nexstrain trees.
-
-<!-- termynal -->
-
-```console
-$ alvoc make_constellations <nexstrain_tree_dataset_url> --outdir .
-```
-
-While the above command is useful, nexstrain has a limited set of pathogens, and in addition, it may not capture all the lineage data necessary for your experiment. For those cases, we recommend generating your own constellations file. An example of how this data should look like is below:
 
 ```json
    {
@@ -151,7 +147,27 @@ While the above command is useful, nexstrain has a limited set of pathogens, and
    }
 ```
 
-We provide some [example scripts](https://github.com/alvoc/alvoc/tree/main/examples) for Sars-CoV-2 Pango lineage constellations.
+Typically these are going to have to be custom to your experiment, but we provide the `constellations`command to simplify this procedure. It comes with 2 subcommands for generating constellations, either based on a provided nextstrain tree url, or from a multiple sequence alignment. For most cases, we typically recommend generating your own multiple sequence alignment, since Nexstrain has a limited set of pathogens.In addition, it may not capture all the lineage data necessary for your experiment. 
+
+<!-- termynal -->
+
+```console
+$ alvoc constellations 
+                                                                                                             
+ Usage: alvoc constellations [OPTIONS] COMMAND [ARGS]...                                                     
+                                                                                                             
+ Tools to make constellations                                                                                
+                                                                                                             
+╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                                               │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ nextstrain   Generates constellations using the provided nextstrain phylogeny dataset.                    │
+│ msa          Generates constellations using a custom MSA FASTA file.                                      │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+We also provide some [example scripts](https://github.com/alvoc/alvoc/tree/main/examples) for Sars-CoV-2 Pango lineage constellations.
 
 ---
 
