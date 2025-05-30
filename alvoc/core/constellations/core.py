@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 from collections import defaultdict
 from typing import Any, Iterator, List, Tuple
-
+import hashlib
 
 class DataSource(ABC):
     """
@@ -55,6 +55,22 @@ def calculate_profiles(source: DataSource, raw_data: object, threshold: float):
 
     return profiles
 
+def write_file_checksum(json_path: Path, algo="sha256"):
+    data = json_path.read_bytes()
+    h = hashlib.new(algo, data).hexdigest()
+    checksum_file = json_path.with_suffix(json_path.suffix + f".{algo}")
+    checksum_file.write_text(f"{h}  {json_path.name}\n")
+
+
+def write_manifest(profiles: dict, outdir: Path, n_chars: int = 12):
+    manifest = {}
+    for lineage, sites in profiles.items():
+        # deterministic sorting + compact JSON
+        payload = json.dumps({"sites": sorted(sites)}, separators=(",", ":"), sort_keys=True)
+        hexsum = hashlib.sha256(payload.encode()).hexdigest()[:n_chars]
+        manifest[lineage] = hexsum
+    manifest_path = outdir / "constellations.manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
 
 def create_constellations(profiles: dict, output_dir: Path):
     """Write out 'constellations.json' and 'lineages.txt'."""
@@ -78,6 +94,11 @@ def create_constellations(profiles: dict, output_dir: Path):
     with open(out_txt, "w") as f:
         for clade in sorted(const):
             f.write(clade + "\n")
+    # whole-file checksum
+    write_file_checksum(output_dir / "constellations.json")
+
+    # per-lineage manifest
+    write_manifest(profiles, output_dir)
     return const
 
 
