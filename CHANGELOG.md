@@ -1,3 +1,17 @@
+## 0.4.0 (2025-06-02)
+
+### Feat
+
+- add clade split and delimeter options to msa constellation generator
+- add checksums to constellations
+- ad new constellations cli commands
+- add new constellations module with msa-based and nexstrain based scripts
+- normalize regression coefficients and make mutations case-insensitive
+
+### Refactor
+
+- hide legacy constellations file
+
 ## 0.3.2 (2025-04-01)
 
 ### Fix
