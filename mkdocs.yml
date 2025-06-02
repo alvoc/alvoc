@@ -51,6 +51,7 @@ plugins:
   - search
   - mkdocstrings
   - termynal
+  - open-in-new-tab
 
 markdown_extensions:
   - admonition
