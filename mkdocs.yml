@@ -45,6 +45,7 @@ nav:
 - Constellations: constellations.md
 - Reference: reference.md
 - Changelog: changelog.md
+- Developer: dev.md
 
 plugins:
   - search
