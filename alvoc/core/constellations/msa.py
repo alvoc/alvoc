@@ -4,29 +4,26 @@ from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
 from alvoc.core.constellations.core import DataSource
 
-
 class MSADataSource(DataSource):
     """
-    Multiple‐Sequence‐Alignment data source.
-    Uses the first sequence in the alignment as reference,
-    and yields one record per query sequence.
+    MSADataSource now takes:
+      • clade_delim  (e.g. "|" or "," or ";")
+      • clade_field  (zero-based index of which split-piece is the clade)
+    If both are provided, we do header.split(clade_delim)[clade_field].
+    Otherwise, we leave `clade_key = full_header`.
     """
 
+    def __init__(self, clade_delim: str = None, clade_field: int = None):
+        self.clade_delim = clade_delim
+        self.clade_field = clade_field
+
     def fetch(self, source: str) -> MultipleSeqAlignment:
-        """
-        Load a FASTA MSA from `source` (file path or URL).
-        """
-        # (if you need to support URLs, you could download to a temp file here)
         return AlignIO.read(source, "fasta")
 
     def records(
         self, raw_data: MultipleSeqAlignment
     ) -> Iterator[Tuple[str, List[str]]]:
-        """
-        Compare each sequence to the reference (alignment[0]),
-        build mutations like "A100T", and yield (sequence_id, [mutations]).
-        """
-        # build a map from alignment column → ungapped reference position
+        # 1) Build a map from alignment-column → reference-position:
         ref_seq = str(raw_data[0].seq)
         ref_map: List[int] = []
         counter = 0
@@ -37,20 +34,30 @@ class MSADataSource(DataSource):
             else:
                 ref_map.append(None)
 
-        # for each non-reference record:
+        # 2) Loop over each non-reference record
         for record in raw_data[1:]:
-            seq_id = record.id
+            header = record.id
+            # If both delim+field are set, split; otherwise use the full header
+            if self.clade_delim is not None and self.clade_field is not None:
+                parts = header.split(self.clade_delim)
+                # Guard against out-of-range indices:
+                if self.clade_field < len(parts):
+                    clade_key = parts[self.clade_field]
+                else:
+                    # fallback if the user’s choices are invalid
+                    clade_key = header
+                # You could also warn if clade_field >= len(parts), but
+                # at minimum we must return something
+            else:
+                clade_key = header
+
             alt_seq = str(record.seq)
             muts: List[str] = []
-
             for idx, (r_base, a_base) in enumerate(zip(ref_seq, alt_seq)):
-                # skip gaps
                 if r_base == "-" or a_base == "-":
                     continue
-                # record a mutation
                 if r_base != a_base:
-                    pos = ref_map[idx]  # guaranteed non‐None here
+                    pos = ref_map[idx]  # guaranteed non-None here
                     muts.append(f"{r_base}{pos}{a_base}")
 
-            # yield one profile per sequence
-            yield seq_id, muts
+            yield clade_key, muts
