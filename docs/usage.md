@@ -95,7 +95,7 @@ You can test how it works using the following examples to get a feel for it:
 
 ## Finding Lineages
 
-The **`find-lineages`** command identifies viral lineages from sequencing data. Running it will output a lineage abundance heatmap and two csv files.
+The **`find-lineages`** command identifies viral lineages from sequencing data. Running it will output a lineage abundance heatmap and two csv files. To get started, you'll need your reference genome, a samplesheet listing your bam files, and a constellations file. See the [constellations section for more details](constellations.md).
 
 ### Command Example
 
@@ -104,72 +104,6 @@ The **`find-lineages`** command identifies viral lineages from sequencing data. 
 ```console
 $ alvoc find-lineages some_accession_id samples.csv constellations.json --outdir ./results
 ```
-
-### Constellations
-
-A key requirement for the `find-lineages` command is is a json input file containing lineage-centric data. We use the term "constellations" to convey how lineage-defining mutations are organized. Constellations should include a list of site mutations in nucleotide format. Currently our constellation format looks like this:
-
-
-```json
-   {
-     "A.23.1": {
-        "lineage": "A.23.1",
-        "label": "A.23.1-like",
-        "description": "A.23.1 lineage defining mutations",
-        "sources": [],
-        "tags": [
-            "A.23.1"
-        ],
-        "sites": [
-            "C4573T",
-            "C8782T",
-            "C10747T",
-            "G11230T",
-            "G11266T",
-            "G11521T",
-            "C16575T",
-            "C17745T",
-            "C22000T",
-            "C22033A",
-            "G22661T",
-            "G23401T",
-            "C23604G",
-            "T24097C",
-            "T28144C",
-            "G28167A",
-            "G28378C",
-            "G28878A",
-            "G29742A"
-        ],
-        "note": "Unique mutations for sublineage"
-    },
-    ...
-   }
-```
-
-Typically these are going to have to be custom to your experiment, but we provide the `constellations`command to simplify this procedure. It comes with 2 subcommands for generating constellations, either based on a provided nextstrain tree url, or from a multiple sequence alignment. For most cases, we typically recommend generating your own multiple sequence alignment, since Nexstrain has a limited set of pathogens.In addition, it may not capture all the lineage data necessary for your experiment. For reference, check the msa docs found [here](msa.md). 
-
-<!-- termynal -->
-
-```console
-$ alvoc constellations 
-                                                                                                             
- Usage: alvoc constellations [OPTIONS] COMMAND [ARGS]...                                                     
-                                                                                                             
- Tools to make constellations                                                                                
-                                                                                                             
-╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ --help          Show this message and exit.                                                               │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ nextstrain   Generates constellations using the provided nextstrain phylogeny dataset.                    │
-│ msa          Generates constellations using a custom MSA FASTA file.                                      │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-```
-
-!!! note
-
-    We also provide some [example scripts](https://github.com/alvoc/alvoc/tree/main/examples) for Sars-CoV-2 Pango lineage  constellations.
  
 
 ## Finding Mutations

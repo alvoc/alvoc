@@ -1,4 +1,75 @@
-### Generating an MSA for Constellation Creation
+# Constellations
+
+## What are constellations?
+
+A key requirement for the `find-lineages` command is is a json input file containing lineage-centric data. We use the term "constellations" to convey how lineage-defining mutations are organized. Constellations should include a list of site mutations in nucleotide format.
+
+### Constellation Format
+
+Currently our constellation format looks like this:
+
+```json
+   {
+     "A.23.1": {
+        "lineage": "A.23.1",
+        "label": "A.23.1-like",
+        "description": "A.23.1 lineage defining mutations",
+        "sources": [],
+        "tags": [
+            "A.23.1"
+        ],
+        "sites": [
+            "C4573T",
+            "C8782T",
+            "C10747T",
+            "G11230T",
+            "G11266T",
+            "G11521T",
+            "C16575T",
+            "C17745T",
+            "C22000T",
+            "C22033A",
+            "G22661T",
+            "G23401T",
+            "C23604G",
+            "T24097C",
+            "T28144C",
+            "G28167A",
+            "G28378C",
+            "G28878A",
+            "G29742A"
+        ],
+        "note": "Unique mutations for sublineage"
+    },
+    ...
+   }
+```
+
+Typically these are going to have to be custom to your experiment, but we provide the `constellations`command to simplify this procedure. It comes with 2 subcommands for generating constellations, either based on a provided nextstrain tree url, or from a multiple sequence alignment. For most cases, we typically recommend generating your own multiple sequence alignment, since Nexstrain has a limited set of pathogens.In addition, it may not capture all the lineage data necessary for your experiment.
+
+<!-- termynal -->
+
+```console
+$ alvoc constellations 
+                                                                                                             
+ Usage: alvoc constellations [OPTIONS] COMMAND [ARGS]...                                                     
+                                                                                                             
+ Tools to make constellations                                                                                
+                                                                                                             
+╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                                               │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ nextstrain   Generates constellations using the provided nextstrain phylogeny dataset.                    │
+│ msa          Generates constellations using a custom MSA FASTA file.                                      │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+!!! note
+
+    We also provide some [example scripts](https://github.com/alvoc/alvoc/tree/main/examples) for Sars-CoV-2 Pango lineage  constellations.
+
+## Generating an MSA for Constellation Creation
 
 When using the `alvoc constellations msa` subcommand, you need to supply a multiple‐sequence alignment (MSA) in FASTA format that contains all reference genomes (or representative sequences) from the lineages you wish to capture. Below is a step‐by‐step guide for building such an MSA using common tools (e.g., MAFFT), along with recommendations on sequence selection and basic quality checks.
 

@@ -42,6 +42,7 @@ theme:
 nav:
 - Home: index.md
 - Usage: usage.md
+- Constellations: constellations.md
 - Reference: reference.md
 - Changelog: changelog.md
 
