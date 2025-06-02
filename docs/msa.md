@@ -110,12 +110,14 @@ Before feeding the MSA into `alvoc constellations msa`, run a quick sanity check
 
 #### 5. Run `alvoc constellations msa`
 
-Once you have a validated MSA (e.g., `references_aligned_trimmed.fasta`), call the constellations subcommand:
+Once you have a validated MSA (e.g., `references_aligned_trimmed.fasta`), call the constellations subcommand. Ensure you specify your header delimeter and clade field index so the algorithm correctly groups your constellations:
 
 ```bash
 alvoc constellations msa \
     references_aligned_trimmed.fasta \
     -o constellations
+    -cd '|' \
+    -cf 0
 ```
 
 After this runs, you’ll get a directory as specified by the output parameter, containing a `constellations.json` file that specifies lineage‐specific site mutations derived from your MSA.
