@@ -221,21 +221,21 @@ docker run -it --rm alvoc
 ## Best Practices
 
 1. **Code Style**:
-   - Follow PEP 8
-   - Use type hints
-   - Document functions with docstrings
+    - Follow PEP 8
+    - Use type hints
+    - Document functions with docstrings
 
 2. **Git Workflow**:
-   - Use feature branches
-   - Write meaningful commit messages following Conventional Commits
-   - Keep commits atomic and focused
+    - Use feature branches
+    - Write meaningful commit messages following Conventional Commits
+    - Keep commits atomic and focused
 
 3. **Testing**:
-   - Write tests for new features
-   - Maintain good test coverage
-   - Mock external dependencies
+    - Write tests for new features
+    - Maintain good test coverage
+    - Mock external dependencies
 
 4. **Documentation**:
-   - Keep API docs up-to-date
-   - Document complex procedures
-   - Include examples
+    - Keep API docs up-to-date
+    - Document complex procedures
+    - Include examples
