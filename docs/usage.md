@@ -147,7 +147,7 @@ A key requirement for the `find-lineages` command is is a json input file contai
    }
 ```
 
-Typically these are going to have to be custom to your experiment, but we provide the `constellations`command to simplify this procedure. It comes with 2 subcommands for generating constellations, either based on a provided nextstrain tree url, or from a multiple sequence alignment. For most cases, we typically recommend generating your own multiple sequence alignment, since Nexstrain has a limited set of pathogens.In addition, it may not capture all the lineage data necessary for your experiment. 
+Typically these are going to have to be custom to your experiment, but we provide the `constellations`command to simplify this procedure. It comes with 2 subcommands for generating constellations, either based on a provided nextstrain tree url, or from a multiple sequence alignment. For most cases, we typically recommend generating your own multiple sequence alignment, since Nexstrain has a limited set of pathogens.In addition, it may not capture all the lineage data necessary for your experiment. For reference, check the msa docs found [here](msa.md) 
 
 <!-- termynal -->
 
@@ -167,9 +167,10 @@ $ alvoc constellations
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-We also provide some [example scripts](https://github.com/alvoc/alvoc/tree/main/examples) for Sars-CoV-2 Pango lineage constellations.
+!!! note
 
----
+    We also provide some [example scripts](https://github.com/alvoc/alvoc/tree/main/examples) for Sars-CoV-2 Pango lineage  constellations.
+ 
 
 ## Finding Mutations
 
