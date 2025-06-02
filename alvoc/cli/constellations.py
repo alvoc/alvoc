@@ -48,7 +48,7 @@ def msa(
         None,
         "--clade-delim",
         "-cd",
-        help="Delimiter character/string to split each FASTA header (e.g. '|')",
+        help="Delimiter character/string to split each FASTA header on",
     ),
     clade_field: int = typer.Option(
         None,
