@@ -21,26 +21,36 @@ class DataSource(ABC):
         pass
 
     @abstractmethod
-    def records(self, raw_data: Any) -> Iterator[Tuple[str, List[str]]]:
+    def records(self, raw_data: Any, use_subclades: bool = False) -> Iterator[Tuple[str, List[str]]]:
         """
         Iterate over all entries, yielding:
           clade_name (str), mutations (list of str)
+
+        Args:
+            raw_data: The raw data object from fetch()
+            use_subclades: If True, use subclades instead of clades (default: False)
         """
         ...
 
 
 # Generic pipeline
 
-def calculate_profiles(source: DataSource, raw_data: object, threshold: float):
+def calculate_profiles(source: DataSource, raw_data: object, threshold: float, use_subclades: bool = False):
     """
     Generic function to compute defining mutations per clade from any DataSource.
     Returns a dict: clade_name → set of mutations.
+
+    Args:
+        source: DataSource instance
+        raw_data: Raw data from source.fetch()
+        threshold: Minimum proportion threshold for including mutations
+        use_subclades: If True, use subclades instead of clades (default: False)
     """
     # count sequences/nodes and mutation occurrences
     clade_counts = defaultdict(int)
     mut_counts = defaultdict(lambda: defaultdict(int))
 
-    for clade, muts in source.records(raw_data):
+    for clade, muts in source.records(raw_data, use_subclades=use_subclades):
         clade_counts[clade] += 1
         for m in muts:
             mut_counts[clade][m] += 1
@@ -103,9 +113,19 @@ def create_constellations(profiles: dict, output_dir: Path):
 
 
 def make_constellations(
-    source: DataSource, source_path: str, outdir: Path, threshold: float
+    source: DataSource, source_path: str, outdir: Path, threshold: float, use_subclades: bool = False
 ):
+    """
+    Main pipeline to generate constellations.
+    
+    Args:
+        source: DataSource instance
+        source_path: Path or URL to the data source
+        outdir: Output directory for constellation files
+        threshold: Minimum proportion threshold for including mutations
+        use_subclades: If True, use subclades instead of clades (default: False)
+    """
     raw = source.fetch(source_path)
-    profiles = calculate_profiles(source, raw, threshold)
+    profiles = calculate_profiles(source, raw, threshold, use_subclades=use_subclades)
     create_constellations(profiles, outdir)
     print("Done.")

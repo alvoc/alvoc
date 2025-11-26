@@ -21,8 +21,20 @@ class MSADataSource(DataSource):
         return AlignIO.read(source, "fasta")
 
     def records(
-        self, raw_data: MultipleSeqAlignment
+        self, raw_data: MultipleSeqAlignment, use_subclades: bool = False
     ) -> Iterator[Tuple[str, List[str]]]:
+
+        """
+        Extract mutations from MSA alignment.
+        
+        Args:
+            raw_data: MultipleSeqAlignment object
+            use_subclades: Not applicable for MSA data, included for API compatibility
+        
+        Yields:
+            Tuple of (clade_key, mutations list)
+        """
+
         # 1) Build a map from alignment-column → reference-position:
         ref_seq = str(raw_data[0].seq)
         ref_map: List[int] = []

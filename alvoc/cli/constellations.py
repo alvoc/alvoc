@@ -23,6 +23,12 @@ def nextstrain(
         "-pt",
         help="Minimum proportion of nodes in a clade required to include a mutation",
     ),
+    use_subclades: bool = typer.Option(
+        False,
+        "--use-subclades",
+        "-s",
+        help="Use subclades instead of clades for constellation generation",
+    ),
     outdir=outdir,
 ):
     """
@@ -31,7 +37,7 @@ def nextstrain(
     out = create_dir(outdir=outdir)
     src = NextstrainSource()
     make_constellations(
-        source=src, source_path=tree_url, outdir=out, threshold=proportion_threshold
+        source=src, source_path=tree_url, outdir=out, threshold=proportion_threshold, use_subclades=use_subclades
     )
 
 
@@ -76,5 +82,6 @@ def msa(
         source_path=str(fasta),
         outdir=out,
         threshold=proportion_threshold,
+        use_subclades=False # MSA doesn't use subclades (yet)
     )
  
