@@ -17,7 +17,7 @@ constellations_cli = typer.Typer(
 @constellations_cli.command("nextstrain")
 def nextstrain(
     tree_url: str = typer.Argument(..., help="Nextstrain phylogeny tree dataset JSON URL"),
-    proportion_threshold: int = typer.Option(
+    proportion_threshold: float = typer.Option(
         0.9,
         "--proportion_threshold",
         "-pt",
