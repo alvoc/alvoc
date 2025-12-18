@@ -64,6 +64,26 @@ $ alvoc constellations
 │ msa          Generates constellations using a custom MSA FASTA file.                                      │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
+Generating constellations from a published Nextstrain tree only requires the url to that tree, but we offer some customizable options. The proportion threshold can be adjusted to determine the proportion of nodes belonging to a clade that must have a mutation for it to be included in the constellation for that clade (default 0.9). We suggest lowering this proportion threshold for trees with clades that have very few nodes. 
+Many Nextstrain trees have both clades and subclades, so you can use the `--use-subclades` flag to switch from the default setting of clades to use only the subclades in the tree.
+
+```console
+$ alvoc constellations nextstrain
+
+ Usage: alvoc constellations nextstrain [OPTIONS] TREE_URL
+
+ Generates constellations using the provided nextstrain phylogeny dataset.
+
+╭─ Arguments ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ *    tree_url      TEXT  Nextstrain phylogeny tree dataset JSON URL [required]                                                                │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --proportion_threshold  -pt      FLOAT  Minimum proportion of nodes in a clade required to include a mutation [default: 0.9]                  │
+│ --use-subclades         -s              Use subclades instead of clades for constellation generation                                          │
+│ --outdir                -o       TEXT   Output directory for results and intermediate data [default: .]                                       │
+│ --help                                  Show this message and exit.                                                                           │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
 
 !!! note
 
